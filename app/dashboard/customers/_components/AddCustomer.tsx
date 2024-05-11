@@ -39,7 +39,7 @@ export default function AddCustomer() {
                     </span>
                   </div>
             </DialogTrigger>
-            <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+            <DialogContent onOpenAutoFocus={(e:any) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>Customer Details</DialogTitle>
                 
