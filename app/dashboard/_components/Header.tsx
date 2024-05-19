@@ -33,7 +33,7 @@ async function Header() {
     return redirect("/login");
   };
   return (
-    <div className='bg-zinc-100'>
+    <div className=''>
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>

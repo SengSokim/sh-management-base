@@ -43,11 +43,10 @@ export function AddInvoiceV2() {
   const [open, setOpen] = useState(false);
   const add = async (formData: FormData) => {
     const client_id = formData.get("client_id") as any;
-    const product_id = formData.get("product_id") as any;
     const quantity = formData.get("quantity") as any;
     const price = formData.get("price") as any;
     const status = formData.get("status") as string;
-    addInvoice(client_id,product_id,quantity,price,status)
+    addInvoice(client_id,quantity,price,status)
     setOpen(false);
   };
 
@@ -79,7 +78,7 @@ export function AddInvoiceV2() {
                   <SelectTrigger>
                     <SelectValue placeholder="Clients" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white">
+                  <SelectContent >
                     <SelectGroup>
                       <SelectLabel>Clients</SelectLabel>
                       {customers?.map((item:any,index:number) => (
@@ -89,24 +88,7 @@ export function AddInvoiceV2() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="">
-                <Label htmlFor="products" className="text-right">
-                  Products
-                </Label>
-                <Select name="product_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Products" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectGroup>
-                      <SelectLabel>Products</SelectLabel>
-                      {products?.map((item:any,index:any) => (
-                        <SelectItem value={item.id.toString()} key={index}>{item.name}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
+              
               <div className="">
                 <Label htmlFor="quantity" className="text-right">
                   Quantity

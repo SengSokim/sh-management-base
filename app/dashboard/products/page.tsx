@@ -42,6 +42,7 @@ function Products() {
   return (
     <div>
       {showToast && <SuccessAlert />}
+      <title>Products</title>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>

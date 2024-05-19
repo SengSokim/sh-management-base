@@ -1,7 +1,7 @@
 "use client"
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Bell, Cog, Home, LineChart, Package, Package2, ShoppingCart, Users } from 'lucide-react'
+import { Bell, Cog, Home, LineChart, Package, Package2, ShoppingCart, Truck, Users } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 import { usePathname } from 'next/navigation'
@@ -41,18 +41,18 @@ function Sidebar() {
                 
               </Link>
               <Link
-                href="/dashboard/products"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-zinc-500 ${pathname.includes('products') ? 'bg-zinc-300 font-bold' : ''}`}
-              >
-                <Package className="h-4 w-4" />
-                Products{" "}
-              </Link>
-              <Link
                 href="/dashboard/customers"
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-zinc-500 ${pathname.includes('customers') ? 'bg-zinc-300 font-bold' : ''}`}
               >
                 <Users className="h-4 w-4" />
                 Customers
+              </Link>
+              <Link
+                href="/dashboard/suppliers"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-zinc-500 ${pathname.includes('suppliers') ? 'bg-zinc-300 font-bold' : ''}`}
+              >
+                <Truck className="h-4 w-4"/>
+                Suppliers
               </Link>
               <Link
                 href="#"
@@ -62,7 +62,7 @@ function Sidebar() {
                 Analytics
               </Link>
               <Link
-                  href="/dashboard/settings"
+                  href="/dashboard/settings/general"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-zinc-500 ${pathname.includes('settings') ? 'bg-zinc-300 font-bold' : ''}`}
                 >
                   <Cog className="h-4 w-4"/>

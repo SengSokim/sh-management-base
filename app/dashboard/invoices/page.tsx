@@ -25,13 +25,16 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,11 +54,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
+
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 
@@ -73,23 +72,27 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 import { formatCurrency, formatDate } from "@/lib/helper";
 import { AddInvoiceV2 } from "./_components/AddInvoiceV2";
 import SuccessAlert from "@/components/SuccessAlert";
 
 function Invoices() {
-  const { invoices, getInvoices, updateInvoice, deleteInvoice } = useInvoices();
+  const { invoices, getInvoices, updateStatus, deleteInvoice } = useInvoices();
   const [showToast, setShowToast] = useState(false);
-  
+
   const [invoiceIndex, setInvoiceIndex] = useState(0);
   const router = useRouter();
   const supabase = createClient();
- 
+  
   useEffect(() => {
     getInvoices();
     const subscribeChannel = supabase
@@ -107,12 +110,12 @@ function Invoices() {
         }
       )
       .subscribe();
-   
+
     return () => {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
- 
+
   const totalWeek = () => {
     const todayObj = new Date();
     const todayDate = todayObj.getDate();
@@ -121,18 +124,21 @@ function Invoices() {
     const firstDayOfWeek = new Date(todayObj.setDate(todayDate - todayDay));
     const lastDayOfWeek = new Date(firstDayOfWeek);
     lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
-  
-    return invoices.reduce((total:any, item:any) => {
-        
-        const createdAt = new Date(item.created_at);
-       
-        if (item.status.toLowerCase() === 'paid' && createdAt >= firstDayOfWeek && createdAt <= lastDayOfWeek) {
-            return total + item.price;
-        } else {
-            return total;
-        }
+
+    return invoices.reduce((total: any, item: any) => {
+      const paidAt = new Date(item.paid_at);
+
+      if (
+        item.status.toLowerCase() === "paid" &&
+        paidAt >= firstDayOfWeek &&
+        paidAt <= lastDayOfWeek
+      ) {
+        return total + item.price;
+      } else {
+        return total;
+      }
     }, 0);
-  }
+  };
 
   const totalMonth = () => {
     const todayObj = new Date();
@@ -144,24 +150,32 @@ function Invoices() {
     firstDayOfMonth.setDate(1);
     lastDayOfMonth.setMonth(todayObj.getMonth() + 1, 0);
 
-    return invoices.reduce((total:any, item:any) => {
-        
-        const createdAt = new Date(item.created_at);
-       
-        if (item.status.toLowerCase() === 'paid' && createdAt >= firstDayOfMonth && createdAt <= lastDayOfMonth) {
-            return total + item.price;
-        } else {
-            return total;
-        }
+    return invoices.reduce((total: any, item: any) => {
+      const paidAt = new Date(item.paid_at);
+
+      if (
+        item.status.toLowerCase() === "paid" &&
+        paidAt >= firstDayOfMonth &&
+        paidAt <= lastDayOfMonth
+      ) {
+        return total + item.price;
+      } else {
+        return total;
+      }
     }, 0);
-  }
+  };
 
   const removeInvoice = async (id: Number) => {
     deleteInvoice(id);
   };
+
+  const updateStatusInvoice = async (id: Number) => {
+    updateStatus(id);
+  };
   return (
-    <div>
+    <div className="">
       {showToast && <SuccessAlert />}
+      <title>Invoices</title>
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
@@ -180,13 +194,15 @@ function Invoices() {
             <Card x-chunk="dashboard-05-chunk-1">
               <CardHeader className="pb-2">
                 <CardDescription>This Week</CardDescription>
-                <CardTitle className="text-4xl">{formatCurrency(totalWeek())}</CardTitle>
+                <CardTitle className="text-4xl">
+                  {formatCurrency(totalWeek())}
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              {/* <CardContent>
                 <div className="text-xs text-muted-foreground">
                   +25% from last week
                 </div>
-              </CardContent>
+              </CardContent> */}
               <CardFooter>
                 <Progress value={25} aria-label="25% increase" />
               </CardFooter>
@@ -194,13 +210,15 @@ function Invoices() {
             <Card x-chunk="dashboard-05-chunk-2">
               <CardHeader className="pb-2">
                 <CardDescription>This Month</CardDescription>
-                <CardTitle className="text-4xl">{formatCurrency(totalMonth())}</CardTitle>
+                <CardTitle className="text-4xl">
+                  {formatCurrency(totalMonth())}
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              {/* <CardContent>
                 <div className="text-xs text-muted-foreground">
                   +10% from last month
                 </div>
-              </CardContent>
+              </CardContent> */}
               <CardFooter>
                 <Progress value={12} aria-label="12% increase" />
               </CardFooter>
@@ -209,11 +227,11 @@ function Invoices() {
           <div className="grid grid-rows-3 grid-flow-col gap-4 ">
             <Tabs defaultValue="week">
               <div className="flex items-center">
-                <TabsList>
+                {/* <TabsList>
                   <TabsTrigger value="week">Week</TabsTrigger>
                   <TabsTrigger value="month">Month</TabsTrigger>
                   <TabsTrigger value="year">Year</TabsTrigger>
-                </TabsList>
+                </TabsList> */}
                 <div className="ml-auto flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -262,18 +280,19 @@ function Invoices() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>#</TableHead>
                           <TableHead>Customer</TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Type
-                          </TableHead>
+
                           <TableHead className="hidden sm:table-cell">
                             Status
                           </TableHead>
                           <TableHead className="hidden md:table-cell">
                             Date
                           </TableHead>
+                          <TableHead className="hidden md:table-cell">
+                            Paid Date
+                          </TableHead>
                           <TableHead className="text-right">Amount</TableHead>
-                        
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -283,33 +302,38 @@ function Invoices() {
                             className="hover:bg-zinc-300"
                             onClick={() => setInvoiceIndex(index)}
                           >
+                            <TableCell>{index + 1}</TableCell>
                             <TableCell>
                               <div className="font-medium">
-                                {invoice.clients.name} 
+                                {invoice.clients?.name}
                               </div>
                               <div className="hidden text-sm text-muted-foreground md:inline">
-                                {invoice.clients.email}
+                                {invoice.clients?.email}
                               </div>
                             </TableCell>
+
                             <TableCell className="hidden sm:table-cell">
-                              Sale
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              <Badge className="text-xs capitalize" variant="secondary">
+                              <Badge
+                                className="text-xs capitalize"
+                                variant="secondary"
+                              >
                                 {invoice.status}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                            {formatDate(invoice.created_at,'DD MMM YYYY')}
+                              {formatDate(invoice.created_at, "DD MMM YYYY")}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {formatDate(invoice.paid_at, "DD MMM YYYY")}
                             </TableCell>
                             <TableCell className="text-right">
                               {formatCurrency(invoice.price)}
                             </TableCell>
-                        
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
+                    
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -318,7 +342,8 @@ function Invoices() {
         </div>
 
         <div>
-          <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
+          <Card className="h-[220px]"></Card>
+          <Card className="overflow-hidden mt-3" x-chunk="dashboard-05-chunk-4">
             <CardHeader className="flex flex-row items-start bg-muted/50">
               <div className="grid gap-0.5">
                 <CardTitle className="group flex items-center gap-2 text-lg">
@@ -334,10 +359,52 @@ function Invoices() {
                 </CardTitle>
                 <CardDescription>
                   Date:{" "}
-                  {formatDate(invoices[invoiceIndex]?.created_at || "",'DD MMM YYYY')}{" "} <br />
-                  Status: {" "}
-                  {invoices[invoiceIndex]?.status}
-
+                  {formatDate(
+                    invoices[invoiceIndex]?.created_at || "",
+                    "DD MMM YYYY"
+                  )}{" "}
+                  <br />
+                  Status: {invoices[invoiceIndex]?.status.toUpperCase()}
+                  <br />
+                  {invoices[invoiceIndex]?.status == "unpaid" ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1 mt-3"
+                        >
+                          <Truck className="h-3.5 w-3.5" />
+                          <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
+                            Paid
+                          </span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you sure you want to update the status?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will update the
+                            invoice status to paid.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e: any) =>
+                              updateStatusInvoice(invoices[invoiceIndex]?.id)
+                            }
+                          >
+                            Update
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    ""
+                  )}
                 </CardDescription>
               </div>
               <div className="ml-auto flex items-center gap-1">
@@ -358,8 +425,14 @@ function Invoices() {
                     <DropdownMenuItem>Edit</DropdownMenuItem>
                     <DropdownMenuItem>Export</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={(e: any) => removeInvoice(invoices[invoiceIndex]?.id)}
-                        className="hover:bg-zinc-300 text-red-400">Trash </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e: any) =>
+                        removeInvoice(invoices[invoiceIndex]?.id)
+                      }
+                      className="hover:bg-zinc-300 text-red-400"
+                    >
+                      Trash{" "}
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -370,22 +443,17 @@ function Invoices() {
                 <ul className="grid gap-3">
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Glimmer Lamps x <span>2</span>
+                      {invoices[invoiceIndex]?.description} x{" "}
+                      <span>{invoices[invoiceIndex]?.quantity}</span>
                     </span>
-                    <span>$250.00</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span className="text-muted-foreground">
-                      Aqua Filters x <span>1</span>
-                    </span>
-                    <span>$49.00</span>
+                    <span>{formatCurrency(invoices[invoiceIndex]?.price)}</span>
                   </li>
                 </ul>
                 <Separator className="my-2" />
                 <ul className="grid gap-3">
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>$299.00</span>
+                    <span>{formatCurrency(invoices[invoiceIndex]?.price)}</span>
                   </li>
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Shipping</span>

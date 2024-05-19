@@ -1,38 +1,30 @@
 "use client";
-import { useCustomers } from "@/app/hooks/useCustomers";
+import { useSuppliers } from "@/app/hooks/useSuppliers";
 import SuccessAlert from "@/components/SuccessAlert";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/utils/supabase/client";
 import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import React, { useEffect, useState } from "react";
-import { AddCustomerV2 } from "./_components/AddCustomerV2";
-import { CustomerTable } from "./_components/CustomerTable";
+import { AddSupplierV2 } from "./_components/AddSupplierV2";
+import { SupplierTable } from "./_components/SupplierTable";
 
-function Customers() {
-  const { customers, getCustomers } = useCustomers();
+function page() {
+  const { suppliers, getSuppliers } = useSuppliers();
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    getCustomers();
+    getSuppliers();
     const subscribeChannel = supabase
-      .channel("all-clients-changes-follow-up")
+      .channel("all-suppliers-changes-follow-up")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "clients" },
+        { event: "*", schema: "public", table: "suppliers" },
         (payload: any) => {
-          getCustomers();
+          getSuppliers();
           setShowToast(true);
 
           setTimeout(() => {
@@ -45,10 +37,11 @@ function Customers() {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
+ 
   return (
-    <div className="flex flex-col">
+    <div>
       {showToast && <SuccessAlert />}
-      <title>Customers</title>
+      <title>Suppliers</title>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>
@@ -76,12 +69,12 @@ function Customers() {
               Export
             </span>
           </Button>
-          <AddCustomerV2 />
+          <AddSupplierV2 />
         </div>
       </div>
-      <CustomerTable customers={customers} />
+      <SupplierTable suppliers={suppliers} />
     </div>
   );
 }
 
-export default Customers;
+export default page;
