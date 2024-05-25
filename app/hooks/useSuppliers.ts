@@ -29,9 +29,7 @@ export const useSuppliers = () => {
     }
     
     const addSupplier = async (name:string,email:string,phone:string,address:string) => {
-        const {
-            data: { user },
-          } = await supabase.auth.getUser();
+        
         const { data, error } = await supabase
         .from('suppliers')
         .insert([
@@ -39,8 +37,7 @@ export const useSuppliers = () => {
             name: name, 
             email: email,
             phone: phone,
-            address: address,
-            admin_id: user?.id
+            address: address
         },
         ])
         .select()

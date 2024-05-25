@@ -27,7 +27,7 @@ export default function RootLayout({
             General
           </Link>
           <Link
-            href="#"
+            href="/dashboard/settings/profile"
             className={`${
               pathname.includes("profile") ? "font-bold" : ""
             }`}

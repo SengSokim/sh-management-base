@@ -22,9 +22,7 @@ export const useProducts = () => {
     }
     
     const addProduct = async (name:String,description:String,category:String,price:Number,quantity:Number) => {
-        const {
-            data: { user },
-          } = await supabase.auth.getUser();
+    
         const { data, error } = await supabase
         .from('products')
         .insert([
@@ -32,8 +30,7 @@ export const useProducts = () => {
             description: description,
             category: category,
             price: price,
-            quantity: quantity,
-            admin_id: user?.id
+            quantity: quantity
         },
         ])
         .select()
@@ -41,9 +38,7 @@ export const useProducts = () => {
     }
 
     const updateProduct = async (id:Number,name:String,description:String,category:String,price:String,quantity:String) => {
-        const {
-            data: { user },
-          } = await supabase.auth.getUser();
+     
         const { data, error } = await supabase
         .from('products')
         .update(
@@ -51,8 +46,7 @@ export const useProducts = () => {
             description: description,
             category: category,
             price: price,
-            quantity: quantity,
-            admin_id: user?.id
+            quantity: quantity
         },
         )
         .eq('id', id)

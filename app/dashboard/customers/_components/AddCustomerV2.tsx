@@ -87,8 +87,9 @@ export function AddCustomerV2() {
           </span>
         </div>
       </DrawerTrigger>
-      <DrawerContent className="p-5 h-[1000px] ">
-        <div className="w-[550px] ">
+      <DrawerContent className="p-5 h-full">
+        <div className="max-w">
+
           <h2 className="font-bold py-5">Customer Details</h2>
           <form action={add} name="add-customer-form" autoComplete="off">
             <div className="space-y-5">

@@ -2,6 +2,7 @@
 import { useCustomers } from "@/app/hooks/useCustomers";
 import SuccessAlert from "@/components/SuccessAlert";
 import { Button } from "@/components/ui/button";
+import { Card, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,10 +16,11 @@ import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import React, { useEffect, useState } from "react";
+import { PaginationControls } from "../_components/PaginationControls";
 import { AddCustomerV2 } from "./_components/AddCustomerV2";
 import { CustomerTable } from "./_components/CustomerTable";
 
-function Customers() {
+function Customers({searchParams}:{searchParams: { [key: string]: string | string[] | undefined}}) {
   const { customers, getCustomers } = useCustomers();
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
@@ -45,6 +47,13 @@ function Customers() {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
+  const page = searchParams['page'] ?? '1'
+  const per_page = searchParams['per_page'] ?? '10'
+
+  const start = (Number(page) - 1) * Number(per_page)
+  const end = start + Number(per_page)
+
+  const paginatedData = customers.slice(start, end)
   return (
     <div className="flex flex-col">
       {showToast && <SuccessAlert />}
@@ -79,7 +88,13 @@ function Customers() {
           <AddCustomerV2 />
         </div>
       </div>
-      <CustomerTable customers={customers} />
+      <Card x-chunk="dashboard-06-chunk-0">
+      <CustomerTable customers={paginatedData} page={page} per_page={per_page}/>
+      <CardFooter>
+      <PaginationControls totalData={customers.length} hasNext={end < customers.length} customPerPage={10} hasPrev={start > 0}/>
+        </CardFooter>
+     
+      </Card>
     </div>
   );
 }

@@ -14,7 +14,7 @@ export const useCustomers = () => {
         .from('clients')
         .select('*')
         .eq('admin_id',user?.id)
-        .range(0, 9)
+      
         .order('id', { ascending: true })
         if(clients){
             setCustomers(clients)
@@ -22,17 +22,14 @@ export const useCustomers = () => {
     }
     
     const addCustomer = async (name:String,phone:String,address:String,email:String) => {
-        const {
-            data: { user },
-          } = await supabase.auth.getUser();
+       
         const { data, error } = await supabase
         .from('clients')
         .insert([
         {   name: name, 
             phone: phone,
             address: address,
-            email: email,
-            admin_id: user?.id
+            email: email
         },
         ])
         .select()
@@ -40,17 +37,14 @@ export const useCustomers = () => {
     }
             
     const updateCustomer = async(id:Number,name:String, phone:String,address:String, email:String) => {
-        const {
-            data: { user },
-          } = await supabase.auth.getUser();
+    
         const { data, error } = await supabase
         .from('clients')
         .update({ 
             name: name, 
             phone: phone,
             address: address,
-            email: email,
-            admin_id: user?.id
+            email: email
         })
         .eq('id', id)
         .select()

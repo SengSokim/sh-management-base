@@ -84,7 +84,7 @@ export function AddSupplierV2() {
           </span>
         </div>
       </DrawerTrigger>
-      <DrawerContent className="p-5 h-[1000px] ">
+      <DrawerContent className="p-5 h-full ">
         <div className=" w-[550px]">
           <h2 className="font-bold my-5">Supplier Details</h2>
           <form action={add} name="add-supplier-form" autoComplete="off">
