@@ -34,7 +34,7 @@ export default async function RootLayout({
 
         <Sidebar />
         <main className="flex flex-1 flex-col lg:gap-6 ">
-            {/* @ts-expect-error Server Component */}
+           
             <Header />
             <div className="lg:p-6 p-4 dark:bg-zinc-800">
                 {children}

@@ -1,14 +1,14 @@
-
+"use client"
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { createClient } from '@/utils/supabase/server'
+
 import { CircleUser, Cog, Home, LineChart, Menu, Package, Package2, ShoppingCart, Users } from 'lucide-react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import React from 'react'
+import { redirect, useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,21 +17,39 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { createClient } from '@/utils/supabase/client'
 
-async function Header() {
-    const supabase = createClient();
+function Header() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter(); // For navigation after sign out
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient(); // Initialize Supabase client
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.error('Error fetching user:', error);
+        setUser(null);
+      } else {
+        setUser(user);
+      }
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []);
+
   const signOut = async () => {
-    "use server";
-
     const supabase = createClient();
     await supabase.auth.signOut();
-    return redirect("/login");
+    router.push('/login'); // Redirect to login page after sign out
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className=''>
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
