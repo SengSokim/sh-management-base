@@ -16,6 +16,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useProducts } from "@/app/hooks/useProducts";
 import { useCustomers } from "@/app/hooks/useCustomers";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const data = [
   {
@@ -73,70 +83,136 @@ export function AddCustomerV2() {
   };
 
   return (
-    <Drawer
-      direction="right"
-      snapPoints={[0.31]}
-      open={open}
-      onOpenChange={setOpen}
-    >
-      <DrawerTrigger asChild>
+    // <Drawer
+    //   direction="right"
+    //   snapPoints={[0.31]}
+    //   open={open}
+    //   onOpenChange={setOpen}
+    // >
+    //   <DrawerTrigger asChild>
+    //     <div className="flex items-center px-2 rounded h-7 gap-1 hover:bg-zinc-300 border">
+    //       <PlusCircle className="h-3.5 w-3.5" />
+    //       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+    //         Add Customer
+    //       </span>
+    //     </div>
+    //   </DrawerTrigger>
+    //   <DrawerContent className="p-5 h-full">
+    //     <div className="max-w">
+
+    //       <h2 className="font-bold py-5">Customer Details</h2>
+    //       <form action={add} name="add-customer-form" autoComplete="off">
+    //         <div className="space-y-5">
+    //           <div className="">
+    //             <Label htmlFor="name" className="text-right">
+    //               Name
+    //             </Label>
+    //             <Input id="name" name="name" className="col-span-3" />
+    //           </div>
+    //           <div className="">
+    //             <Label htmlFor="username" className="text-right">
+    //               Phone
+    //             </Label>
+    //             <Input
+    //               id="username"
+    //               type="number"
+    //               name="phone"
+    //               className="col-span-3"
+    //             />
+    //           </div>
+    //           <div className="">
+    //             <Label htmlFor="username" className="text-right">
+    //               Email
+    //             </Label>
+    //             <Input
+    //               id="username"
+    //               type="email"
+    //               name="email"
+    //               className="col-span-3"
+    //             />
+    //           </div>
+    //           <div className="">
+    //             <Label htmlFor="username" className="text-right">
+    //               Address
+    //             </Label>
+    //             <Input id="username" name="address" className="col-span-3" />
+    //           </div>
+    //         </div>
+    //         <Button
+    //           type="submit"
+    //           className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
+    //         >
+    //           Save change
+    //         </Button>
+    //       </form>
+    //     </div>
+    //   </DrawerContent>
+    // </Drawer>
+    <Sheet>
+      <SheetTrigger>
         <div className="flex items-center px-2 rounded h-7 gap-1 hover:bg-zinc-300 border">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Add Customer
           </span>
         </div>
-      </DrawerTrigger>
-      <DrawerContent className="p-5 h-full">
-        <div className="max-w">
-
-          <h2 className="font-bold py-5">Customer Details</h2>
-          <form action={add} name="add-customer-form" autoComplete="off">
-            <div className="space-y-5">
-              <div className="">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input id="name" name="name" className="col-span-3" />
-              </div>
-              <div className="">
-                <Label htmlFor="username" className="text-right">
-                  Phone
-                </Label>
-                <Input
-                  id="username"
-                  type="number"
-                  name="phone"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="">
-                <Label htmlFor="username" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="username"
-                  type="email"
-                  name="email"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="">
-                <Label htmlFor="username" className="text-right">
-                  Address
-                </Label>
-                <Input id="username" name="address" className="col-span-3" />
-              </div>
+      </SheetTrigger>
+      <SheetContent className="min-w-[400px]">
+        <SheetHeader>
+          <SheetTitle>Enter Customer details</SheetTitle>
+          <SheetDescription>
+            Make changes to your profile here. Click save when you're done.
+          </SheetDescription>
+        </SheetHeader>
+        <form action={add} name="add-customer-form" autoComplete="off">
+          <div className="space-y-5">
+            <div className="">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input id="name" name="name" className="col-span-3" />
             </div>
-            <Button
-              type="submit"
-              className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
-            >
-              Save change
-            </Button>
-          </form>
-        </div>
-      </DrawerContent>
-    </Drawer>
+            <div className="">
+              <Label htmlFor="username" className="text-right">
+                Phone
+              </Label>
+              <Input
+                id="username"
+                type="number"
+                name="phone"
+                className="col-span-3"
+              />
+            </div>
+            <div className="">
+              <Label htmlFor="username" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="username"
+                type="email"
+                name="email"
+                className="col-span-3"
+              />
+            </div>
+            <div className="">
+              <Label htmlFor="username" className="text-right">
+                Address
+              </Label>
+              <Input id="username" name="address" className="col-span-3" />
+            </div>
+          </div>
+          <SheetFooter>
+            <SheetClose asChild>
+              <Button
+                type="submit"
+                className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
+              >
+                Save change
+              </Button>
+            </SheetClose>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
   );
 }

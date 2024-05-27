@@ -442,7 +442,7 @@ function Invoices({
             <CardContent className="p-6 text-sm">
               <div className="grid gap-3">
                 <div className="font-semibold">Order Details </div>
-                <Table>
+                <Table className="w-[400px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Item Name</TableHead>
