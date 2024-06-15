@@ -42,6 +42,7 @@ function Setting() {
         {/* <CardFooter className="border-t px-6 py-4">
         <Button>Save</Button>
       </CardFooter> */}
+      {/* <iframe src="https://chatbolt.ai/iframe/c8c7be04-7c04-447f-81fc-d1422c67b5ab" width="100%" height="800" frameBorder="0" ></iframe> */}
       </Card>
     </div>
   );

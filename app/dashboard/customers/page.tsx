@@ -20,7 +20,11 @@ import { PaginationControls } from "../_components/PaginationControls";
 import { AddCustomerV2 } from "./_components/AddCustomerV2";
 import { CustomerTable } from "./_components/CustomerTable";
 
-function Customers({searchParams}:{searchParams: { [key: string]: string | string[] | undefined}}) {
+function Customers({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const { customers, getCustomers } = useCustomers();
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
@@ -47,26 +51,28 @@ function Customers({searchParams}:{searchParams: { [key: string]: string | strin
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
-  const page = searchParams['page'] ?? '1'
-  const per_page = searchParams['per_page'] ?? '10'
+  const page = searchParams["page"] ?? "1";
+  const per_page = searchParams["per_page"] ?? "10";
 
-  const start = (Number(page) - 1) * Number(per_page)
-  const end = start + Number(per_page)
+  const start = (Number(page) - 1) * Number(per_page);
+  const end = start + Number(per_page);
 
-  const paginatedData = customers.slice(start, end)
+  const paginatedData = customers.slice(start, end);
   return (
     <div className="flex flex-col">
       {showToast && <SuccessAlert />}
       <title>Customers</title>
+      <h1 className="text-[32px] font-bold">Customers</h1>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 gap-1">
-                <ListFilter className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
-                </span>
+              <Button
+                variant="expandIcon"
+                Icon={ListFilter}
+                iconPlacement="left"
+              >
+                Filter
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -79,21 +85,31 @@ function Customers({searchParams}:{searchParams: { [key: string]: string | strin
               <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" variant="outline" className="h-7 gap-1">
-            <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
+          <Button
+            variant="expandIcon"
+            Icon={File}
+            iconPlacement="left"
+            className=""
+          >
+            Export
           </Button>
           <AddCustomerV2 />
         </div>
       </div>
       <Card x-chunk="dashboard-06-chunk-0">
-      <CustomerTable customers={paginatedData} page={page} per_page={per_page}/>
-      <CardFooter>
-      <PaginationControls totalData={customers.length} hasNext={end < customers.length} customPerPage={10} hasPrev={start > 0}/>
+        <CustomerTable
+          customers={paginatedData}
+          page={page}
+          per_page={per_page}
+        />
+        <CardFooter>
+          <PaginationControls
+            totalData={customers.length}
+            hasNext={end < customers.length}
+            customPerPage={10}
+            hasPrev={start > 0}
+          />
         </CardFooter>
-     
       </Card>
     </div>
   );

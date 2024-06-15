@@ -40,6 +40,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PaginationControls } from "./_components/PaginationControls";
+import { CalendarCard } from "./_components/CalendarCard";
+
+const headers = [
+  { label: 'First Name', key: 'firstName' },
+  { label: 'Email', key: 'email' },
+  { label: 'Phone', key: 'phone' },
+  { label: 'Address', key: 'address' },
+];
 const data = [
   {
     id: 1,
@@ -198,7 +206,8 @@ export default async function Dashboard({
   return (
     <div>
       <title>Dashboard</title>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <main className="flex flex-1 flex-col gap-4 px-4 md:gap-8 md:px-8">
+        <h1 className="text-[32px] font-bold">Home</h1>
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card x-chunk="dashboard-01-chunk-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -262,12 +271,15 @@ export default async function Dashboard({
                   Recent transactions from your store.
                 </CardDescription>
               </div>
-              <Button asChild size="sm" className="ml-auto gap-1">
-                <Link href="#">
-                  View All
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
+              <Button
+                variant="expandIcon"
+                Icon={ArrowUpRight}
+                iconPlacement="right"
+                className="ml-auto"
+              >
+                View All
               </Button>
+              
             </CardHeader>
             <CardContent>
               <Table>
@@ -304,7 +316,9 @@ export default async function Dashboard({
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-8"></CardContent>
+            <CardContent className="grid gap-8">
+              <CalendarCard />
+            </CardContent>
           </Card>
         </div>
       </main>

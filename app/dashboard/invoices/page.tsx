@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ChevronLeft,
   ChevronRight,
+  CircleCheck,
   Copy,
   CreditCard,
   File,
@@ -93,7 +94,7 @@ function Invoices({
 }) {
   const { invoices, getInvoices, updateStatus, deleteInvoice } = useInvoices();
   const [showToast, setShowToast] = useState(false);
-
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [invoiceIndex, setInvoiceIndex] = useState(0);
   const router = useRouter();
   const supabase = createClient();
@@ -189,13 +190,16 @@ function Invoices({
     <div className="">
       {showToast && <SuccessAlert />}
       <title>Invoices</title>
-      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+      <h1 className="text-[32px] font-bold ">Invoices</h1>
+      <main className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+        
         <div className="grid items-start gap-4 md:gap-8 lg:col-span-2">
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
             <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
-              <CardHeader className="pb-3">
-                <CardTitle>Your Orders</CardTitle>
-                <CardDescription className="max-w-lg text-balance leading-relaxed">
+              <CardHeader className="pb-3 ">
+                <CardTitle className="">Your Orders</CardTitle>
+
+                <CardDescription className="max-w-lg leading-relaxed ">
                   Introducing Our Dynamic Orders Dashboard for Seamless
                   Management and Insightful Analysis.
                 </CardDescription>
@@ -207,7 +211,7 @@ function Invoices({
             <Card x-chunk="dashboard-05-chunk-1">
               <CardHeader className="pb-2">
                 <CardDescription>This Week</CardDescription>
-                <CardTitle className="text-4xl">
+                <CardTitle className="text-2xl">
                   {formatCurrency(totalWeek())}
                 </CardTitle>
               </CardHeader>
@@ -220,10 +224,10 @@ function Invoices({
                 <Progress value={25} aria-label="25% increase" />
               </CardFooter>
             </Card>
-            <Card x-chunk="dashboard-05-chunk-2">
+            <Card x-chunk="dashboard-05-chunk-2 text-midnight">
               <CardHeader className="pb-2">
                 <CardDescription>This Month</CardDescription>
-                <CardTitle className="text-4xl">
+                <CardTitle className="text-2xl">
                   {formatCurrency(totalMonth())}
                 </CardTitle>
               </CardHeader>
@@ -242,12 +246,11 @@ function Invoices({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1 text-sm"
+                    variant="expandIcon"
+                    Icon={ListFilter}
+                    iconPlacement="left"
                   >
-                    <ListFilter className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only">Filter</span>
+                    Filter
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -260,9 +263,9 @@ function Invoices({
                   <DropdownMenuCheckboxItem>Refunded</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" variant="outline" className="h-7 gap-1 text-sm">
-                <File className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only">Export</span>
+
+              <Button variant="expandIcon" Icon={File} iconPlacement="left" className="ml-3">
+                Export
               </Button>
             </div>
 
@@ -295,7 +298,7 @@ function Invoices({
                     {paginatedData.map((invoice: any, index: any) => (
                       <TableRow
                         key={index}
-                        className="hover:bg-zinc-300"
+                        className="hover:bg-anti-flash-white"
                         onClick={() =>
                           setInvoiceIndex(
                             index + (Number(page) - 1) * Number(per_page)
@@ -372,14 +375,11 @@ function Invoices({
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 gap-1 mt-3"
+                          variant="expandIcon"
+                          Icon={CircleCheck}
+                          iconPlacement="left"
                         >
-                          <Truck className="h-3.5 w-3.5" />
-                          <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                            Mark as Paid
-                          </span>
+                          Mark As Paid
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -389,7 +389,7 @@ function Invoices({
                           </AlertDialogTitle>
                           <AlertDialogDescription>
                             This action cannot be undone. This will update the
-                            invoice status to paid.
+                            invoice status to PAID.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -399,7 +399,10 @@ function Invoices({
                               updateStatusInvoice(invoices[invoiceIndex]?.id)
                             }
                           >
-                            Update
+                            <div className="group text-gold hover:text-gold/60 transition duration-300">
+                              Update
+                              <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-gold"></span>
+                            </div>
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -410,7 +413,7 @@ function Invoices({
                 </CardDescription>
               </div>
               <div className="ml-auto flex items-center gap-1">
-                <Button size="sm" variant="outline" className="h-8 gap-1">
+                <Button size="sm" variant="gooeyLeft" className="h-8 gap-1">
                   <Truck className="h-3.5 w-3.5" />
                   <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
                     Track Order
@@ -418,7 +421,7 @@ function Invoices({
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="outline" className="h-8 w-8">
+                    <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
                       <MoreVertical className="h-3.5 w-3.5" />
                       <span className="sr-only">More</span>
                     </Button>
@@ -454,7 +457,7 @@ function Invoices({
                   <TableBody>
                     {invoices[invoiceIndex]?.products?.map(
                       (item: any, index: number) => (
-                        <TableRow>
+                        <TableRow key={item.name}>
                           <TableCell>{item.name}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>{item.unit_price}</TableCell>
@@ -553,7 +556,7 @@ function Invoices({
                   <PaginationItem>
                     <Button
                       size="icon"
-                      variant="outline"
+                      variant="ringHover"
                       className="h-6 w-6"
                       onClick={(e) => setInvoiceIndex(invoiceIndex - 1)}
                       disabled={!invoiceIndex}
@@ -565,7 +568,7 @@ function Invoices({
                   <PaginationItem>
                     <Button
                       size="icon"
-                      variant="outline"
+                      variant="ringHover"
                       className="h-6 w-6"
                       onClick={(e) => setInvoiceIndex(invoiceIndex + 1)}
                       disabled={invoiceIndex == invoices.length - 1}

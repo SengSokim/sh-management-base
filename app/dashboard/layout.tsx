@@ -33,10 +33,9 @@ export default async function RootLayout({
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] ">
 
         <Sidebar />
-        <main className="flex flex-1 flex-col lg:gap-6 ">
-           
+        <main className="flex flex-1 flex-col ">
             <Header />
-            <div className="lg:p-6 p-4 dark:bg-zinc-800">
+            <div className="p-4 sm:px-6 sm:py-0 bg-cloud dark:bg-darknight h-full max-h-full">
                 {children}
             </div>
             

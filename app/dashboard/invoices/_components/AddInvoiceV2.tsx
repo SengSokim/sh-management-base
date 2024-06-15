@@ -57,6 +57,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/helper";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const formSchema = z.object({
+  client_id: z.string({
+    required_error: "Please select a client.",
+  }),
+  shipping_fees: z.coerce.number({
+    required_error: "Please enter the shipping fees amount",
+  }),
+  status: z.string({
+    required_error: "Please select the status.",
+  }),
+});
 interface productItem {
   product_name: string;
   product_quantity: number;
@@ -81,14 +105,6 @@ export function AddInvoiceV2() {
   ]);
   const { addInvoice } = useInvoices();
   const [open, setOpen] = useState(false);
-  const add = async (formData: FormData) => {
-    const client_id = formData.get("client_id") as any;
-    const status = formData.get("status") as string;
-    const shipping_fees = formData.get("shipping_fees") as any;
-
-    addInvoice(client_id, shipping_fees, status, productItems);
-    setOpen(false);
-  };
 
   const handleChange = (index: any, event: any) => {
     const { name, value } = event.target;
@@ -120,60 +136,98 @@ export function AddInvoiceV2() {
     setProductItems(newItems);
   };
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      shipping_fees: 0,
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    const client_id = parseInt(values.client_id);
+    const shipping_fees = values.shipping_fees;
+    const status = values.status;
+
+    if (
+      !productItems[0].product_name ||
+      !productItems[0].product_price ||
+      !productItems[0].product_description ||
+      !productItems[0].product_quantity
+    ) {
+      alert("Please enter atleast one product detail");
+    } else {
+      addInvoice(client_id, shipping_fees, status, productItems);
+      setOpen(false);
+
+      form.reset();
+      setProductItems([
+        {
+          product_name: "",
+          product_quantity: 0,
+          product_price: 0.0,
+          product_description: "",
+        },
+      ]);
+    }
+  }
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <div className="flex items-center px-2 rounded h-7 gap-1 hover:bg-zinc-300 border">
-          <PlusCircle className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Create New Invoice
-          </span>
-        </div>
+        <Button variant="expandIcon" Icon={PlusCircle} iconPlacement="left">
+          Create New Invoice
+        </Button>
       </SheetTrigger>
-      <SheetContent className="min-w-[600px] overflow-auto">
+      <SheetContent className="min-w-[600px] overflow-auto dark:bg-midnight">
         <SheetHeader>
-          <SheetTitle>Enter Invoice details</SheetTitle>
+          <SheetTitle className="">Enter Invoice details</SheetTitle>
           <SheetDescription>
-            Make changes to your profile here. Click save when you're done.
+            Create invoice details. Click save when you're done.
           </SheetDescription>
         </SheetHeader>
         <div className="w-full overflow-auto px-2" data-vaul-no-drag>
           <h2 className="font-bold my-5">Invoice Details</h2>
-          <form action={add} name="add-invoice-form" autoComplete="off">
-            <div className="space-y-5">
-              <div className="">
-                <Label htmlFor="clients" className="text-right">
-                  Clients
-                </Label>
-                <Select name="client_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Clients" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Clients</SelectLabel>
-                      {customers?.map((item: any, index: number) => (
-                        <SelectItem value={item.id.toString()} key={index}>
-                          {item.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Card>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="client_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="clients" className="text-right">
+                      Clients
+                    </Label>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a Client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Clients</SelectLabel>
+                          {customers?.map((item: any, index: number) => (
+                            <SelectItem value={item.id.toString()} key={index}>
+                              {item.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Card className="mt-3">
                 <CardHeader>
                   <CardTitle>Product</CardTitle>
-                  <CardDescription>
-                    Lipsum dolor sit amet, consectetur adipiscing elit
-                  </CardDescription>
+                  <CardDescription>Enter product details</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table className="w-[800px]">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[20%] sticky left-0 bg-white">
+                        <TableHead className="w-[20%] sticky left-0 bg-platinum ">
                           Name
                         </TableHead>
                         <TableHead className="w-[20%]">Description</TableHead>
@@ -185,7 +239,7 @@ export function AddInvoiceV2() {
                     <TableBody>
                       {productItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell className="font-semibold sticky left-0 bg-white">
+                          <TableCell className="font-semibold sticky left-0 bg-platinum">
                             <Label htmlFor="product_name" className="sr-only">
                               Name
                             </Label>
@@ -273,44 +327,62 @@ export function AddInvoiceV2() {
                   </Button>
                 </CardFooter>
               </Card>
-              <Label htmlFor="shipping_fees" className="text-right">
-                Shipping Fees
-              </Label>
+              <FormField
+                control={form.control}
+                name="shipping_fees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shipping fees</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Amount" {...field} type="number" />
+                    </FormControl>
 
-              <Input id="tax_charges" name="tax_charges" type="number" />
-              <div className="">
-                <Label htmlFor="status" className="text-right">
-                  Status
-                </Label>
-                <Select name="status">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectGroup>
-                      <SelectLabel>Status</SelectLabel>
-                      <SelectItem value="paid" className="capitalize">
-                        paid
-                      </SelectItem>
-                      <SelectItem value="unpaid" className="capitalize">
-                        unpaid
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <SheetFooter>
-              <SheetClose asChild>
-                <Button
-                  type="submit"
-                  className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
-                >
-                  Save change
-                </Button>
-              </SheetClose>
-            </SheetFooter>
-          </form>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="status" className="text-right">
+                      Status
+                    </Label>
+
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="paid" className="capitalize">
+                            paid
+                          </SelectItem>
+                          <SelectItem value="unpaid" className="capitalize">
+                            unpaid
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                variant="gooeyRight"
+                className="btn mt-5"
+              >
+                Save change
+              </Button>
+            </form>
+          </Form>
         </div>
       </SheetContent>
     </Sheet>

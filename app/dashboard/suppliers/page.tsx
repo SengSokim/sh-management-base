@@ -2,15 +2,29 @@
 import { useSuppliers } from "@/app/hooks/useSuppliers";
 import SuccessAlert from "@/components/SuccessAlert";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Card, CardFooter } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { createClient } from "@/utils/supabase/client";
-import { File, ListFilter } from "lucide-react";
+import { ArrowRightIcon, File, ListFilter } from "lucide-react";
+import Head from "next/head";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { PaginationControls } from "../_components/PaginationControls";
 import { AddSupplierV2 } from "./_components/AddSupplierV2";
 import { SupplierTable } from "./_components/SupplierTable";
 
-function page() {
+function Suppliers({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const { suppliers, getSuppliers } = useSuppliers();
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
@@ -37,20 +51,30 @@ function page() {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
- 
+  const page = searchParams["page"] ?? "1";
+  const per_page = searchParams["per_page"] ?? "10";
+
+  const start = (Number(page) - 1) * Number(per_page);
+  const end = start + Number(per_page);
+
+  const paginatedData = suppliers.slice(start, end);
   return (
     <div>
       {showToast && <SuccessAlert />}
-      <title>Suppliers</title>
+      <Head>
+        <title>Suppliers</title>
+      </Head>
+      <h1 className="text-[32px] font-bold">Suppliers</h1>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 gap-1">
-                <ListFilter className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
-                </span>
+              <Button
+                variant="expandIcon"
+                Icon={ListFilter}
+                iconPlacement="left"
+              >
+                Filter
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -63,18 +87,34 @@ function page() {
               <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" variant="outline" className="h-7 gap-1">
-            <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
+          <Button
+            variant="expandIcon"
+            Icon={File}
+            iconPlacement="left"
+            className=""
+          >
+            Export
           </Button>
           <AddSupplierV2 />
         </div>
       </div>
-      <SupplierTable suppliers={suppliers} />
+      <Card x-chunk="dashboard-06-chunk-0">
+        <SupplierTable
+          suppliers={paginatedData}
+          page={page}
+          per_page={per_page}
+        />
+        <CardFooter>
+          <PaginationControls
+            totalData={suppliers.length}
+            hasNext={end < suppliers.length}
+            customPerPage={10}
+            hasPrev={start > 0}
+          />
+        </CardFooter>
+      </Card>
     </div>
   );
 }
 
-export default page;
+export default Suppliers;

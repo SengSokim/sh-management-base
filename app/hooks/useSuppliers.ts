@@ -21,7 +21,6 @@ export const useSuppliers = () => {
             created_at
         `)
         .eq('admin_id',user?.id)
-        .range(0, 9)
         .order('id', { ascending: true })
         if(suppliers){
             setSuppliers(suppliers)

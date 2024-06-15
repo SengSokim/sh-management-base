@@ -26,192 +26,134 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-const data = [
-  {
-    goal: 400,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 239,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 349,
-  },
-];
-
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  phone: z.string().min(9, {
+    message: "Must be minimum 9 digits long",
+  }),
+  email: z.string().email({
+    message: "Invalid email address",
+  }),
+  address: z.string().min(2, {
+    message: "Address must be at least 2 characters.",
+  }),
+});
 export function AddCustomerV2() {
   const { addCustomer } = useCustomers();
   const [open, setOpen] = useState(false);
-  const add = async (formData: FormData) => {
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const address = formData.get("address") as string;
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    const name = values.name;
+    const phone = values.phone;
+    const email = values.email;
+    const address = values.address;
     addCustomer(name, phone, address, email);
     setOpen(false);
-  };
 
+    form.reset();
+  }
   return (
-    // <Drawer
-    //   direction="right"
-    //   snapPoints={[0.31]}
-    //   open={open}
-    //   onOpenChange={setOpen}
-    // >
-    //   <DrawerTrigger asChild>
-    //     <div className="flex items-center px-2 rounded h-7 gap-1 hover:bg-zinc-300 border">
-    //       <PlusCircle className="h-3.5 w-3.5" />
-    //       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-    //         Add Customer
-    //       </span>
-    //     </div>
-    //   </DrawerTrigger>
-    //   <DrawerContent className="p-5 h-full">
-    //     <div className="max-w">
-
-    //       <h2 className="font-bold py-5">Customer Details</h2>
-    //       <form action={add} name="add-customer-form" autoComplete="off">
-    //         <div className="space-y-5">
-    //           <div className="">
-    //             <Label htmlFor="name" className="text-right">
-    //               Name
-    //             </Label>
-    //             <Input id="name" name="name" className="col-span-3" />
-    //           </div>
-    //           <div className="">
-    //             <Label htmlFor="username" className="text-right">
-    //               Phone
-    //             </Label>
-    //             <Input
-    //               id="username"
-    //               type="number"
-    //               name="phone"
-    //               className="col-span-3"
-    //             />
-    //           </div>
-    //           <div className="">
-    //             <Label htmlFor="username" className="text-right">
-    //               Email
-    //             </Label>
-    //             <Input
-    //               id="username"
-    //               type="email"
-    //               name="email"
-    //               className="col-span-3"
-    //             />
-    //           </div>
-    //           <div className="">
-    //             <Label htmlFor="username" className="text-right">
-    //               Address
-    //             </Label>
-    //             <Input id="username" name="address" className="col-span-3" />
-    //           </div>
-    //         </div>
-    //         <Button
-    //           type="submit"
-    //           className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
-    //         >
-    //           Save change
-    //         </Button>
-    //       </form>
-    //     </div>
-    //   </DrawerContent>
-    // </Drawer>
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger>
-        <div className="flex items-center px-2 rounded h-7 gap-1 hover:bg-zinc-300 border">
-          <PlusCircle className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Add Customer
-          </span>
-        </div>
+        <Button variant="expandIcon" Icon={PlusCircle} iconPlacement="left">
+          New Customer
+        </Button>
       </SheetTrigger>
       <SheetContent className="min-w-[400px]">
         <SheetHeader>
           <SheetTitle>Enter Customer details</SheetTitle>
           <SheetDescription>
-            Make changes to your profile here. Click save when you're done.
+            Enter the customer information. Click save when you're done.
           </SheetDescription>
         </SheetHeader>
-        <form action={add} name="add-customer-form" autoComplete="off">
-          <div className="space-y-5">
-            <div className="">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input id="name" name="name" className="col-span-3" />
-            </div>
-            <div className="">
-              <Label htmlFor="username" className="text-right">
-                Phone
-              </Label>
-              <Input
-                id="username"
-                type="number"
-                name="phone"
-                className="col-span-3"
-              />
-            </div>
-            <div className="">
-              <Label htmlFor="username" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="username"
-                type="email"
-                name="email"
-                className="col-span-3"
-              />
-            </div>
-            <div className="">
-              <Label htmlFor="username" className="text-right">
-                Address
-              </Label>
-              <Input id="username" name="address" className="col-span-3" />
-            </div>
-          </div>
-          <SheetFooter>
-            <SheetClose asChild>
-              <Button
-                type="submit"
-                className="btn bg-zinc-500 text-white hover:bg-zinc-300 mt-5"
-              >
-                Save change
-              </Button>
-            </SheetClose>
-          </SheetFooter>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Name" {...field} />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Phone" {...field} />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Email" {...field} />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Address" {...field} />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" variant="gooeyRight" className="btn mt-5">
+              Save change
+            </Button>
+          </form>
+        </Form>
       </SheetContent>
     </Sheet>
   );
