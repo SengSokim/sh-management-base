@@ -5,24 +5,17 @@ import { headers } from "next/headers";
 import type { Metadata, ResolvingMetadata } from "next";
 import { capitalize } from "@/lib/helper";
 
-type Props = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
 
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   // read route params
   const headerList = headers();
   const pathname = headerList.get("x-current-path")?.split("/")[2];
 
   return {
-    title: capitalize(pathname),
+    title: pathname ? capitalize(pathname) : 'Dashboard',
     description: "management dashboard",
     metadataBase: new URL(defaultUrl),
   };
