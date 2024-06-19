@@ -1,18 +1,12 @@
-import Link from "next/link";
+"use client";
 import {
   Activity,
   ArrowUpRight,
-  CircleUser,
   CreditCard,
   DollarSign,
-  Menu,
-  Package2,
-  Search,
+  Printer,
   Users,
 } from "lucide-react";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,16 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import {
   Table,
   TableBody,
@@ -41,13 +26,9 @@ import {
 } from "@/components/ui/table";
 import { PaginationControls } from "./_components/PaginationControls";
 import { CalendarCard } from "./_components/CalendarCard";
+import { toast } from "sonner";
+import { useRef } from "react";
 
-const headers = [
-  { label: 'First Name', key: 'firstName' },
-  { label: 'Email', key: 'email' },
-  { label: 'Phone', key: 'phone' },
-  { label: 'Address', key: 'address' },
-];
 const data = [
   {
     id: 1,
@@ -191,7 +172,7 @@ const data = [
   },
 ];
 
-export default async function Dashboard({
+export default function Dashboard({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -203,6 +184,32 @@ export default async function Dashboard({
   const end = start + Number(per_page);
 
   const paginatedData = data.slice(start, end);
+  const showToast = () => {
+    toast.success("Event has been created.");
+  };
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    const printContents = printRef.current?.innerHTML;
+    console.log(printContents);
+    if (printContents) {
+      const printWindow = window.open("", "", "height=500,width=800");
+      if (printWindow) {
+        printWindow.document.write("<html><head><title>Print</title>");
+        const linkElement = printWindow.document.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href = 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
+        linkElement.onload = () => {
+          printWindow.document.write('</head><body>');
+          printWindow.document.write(printContents);
+          printWindow.document.write('</body></html>');
+          printWindow.document.close();
+          printWindow.print();
+        };
+        printWindow.document.head.appendChild(linkElement);
+      }
+    }
+  };
   return (
     <div>
       <title>Dashboard</title>
@@ -231,9 +238,9 @@ export default async function Dashboard({
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+2350</div>
+              <div className="text-2xl font-bold">---</div>
               <p className="text-xs text-muted-foreground">
-                +180.1% from last month
+                --- from last month
               </p>
             </CardContent>
           </Card>
@@ -243,9 +250,9 @@ export default async function Dashboard({
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+12,234</div>
+              <div className="text-2xl font-bold">---</div>
               <p className="text-xs text-muted-foreground">
-                +19% from last month
+                --- from last month
               </p>
             </CardContent>
           </Card>
@@ -255,15 +262,17 @@ export default async function Dashboard({
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+573</div>
+              <div className="text-2xl font-bold">---</div>
               <p className="text-xs text-muted-foreground">
-                +201 since last hour
+                --- since last hour
               </p>
             </CardContent>
           </Card>
         </div>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
+        <div
+          className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3"
+        >
+          <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4" ref={printRef}>
             <CardHeader className="flex flex-row items-center">
               <div className="grid gap-2">
                 <CardTitle>Transactions</CardTitle>
@@ -271,14 +280,26 @@ export default async function Dashboard({
                   Recent transactions from your store.
                 </CardDescription>
               </div>
-              <Button
-                variant="expandIcon"
-                Icon={ArrowUpRight}
-                iconPlacement="right"
-                className="ml-auto"
-              >
-                View All
-              </Button>
+              <div className="ml-auto">
+                <Button
+                  variant="expandIcon"
+                  Icon={Printer}
+                  iconPlacement="right"
+                  className="ml-auto"
+                  onClick={() => handlePrint()}
+                >
+                  Print
+                </Button>
+                <Button
+                  variant="expandIcon"
+                  Icon={ArrowUpRight}
+                  iconPlacement="right"
+                  className="ml-3"
+                  onClick={() => showToast()}
+                >
+                  View All
+                </Button>
+              </div>
               
             </CardHeader>
             <CardContent>
@@ -305,16 +326,16 @@ export default async function Dashboard({
                 </TableBody>
               </Table>
             </CardContent>
-            <PaginationControls
+            {/* <PaginationControls
               totalData={data.length}
               hasNext={end < data.length}
               customPerPage={5}
               hasPrev={start > 0}
-            />
+            /> */}
           </Card>
           <Card x-chunk="dashboard-01-chunk-5">
             <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
+              <CardTitle>Calendar</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-8">
               <CalendarCard />

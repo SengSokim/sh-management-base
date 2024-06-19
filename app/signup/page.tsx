@@ -50,11 +50,17 @@ export default function SignUp({
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 ">
       <title>Sign Up</title>
-      <div className="flex items-center justify-center py-12">
+      {/* <div className="flex items-center justify-center py-12 bg-midnight">
         <div className="mx-auto grid w-[350px] gap-6">
           <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
             <Card className="w-full max-w-sm dark:text-black">
               <CardHeader>
+                <Image
+                  src={"/logo.svg"}
+                  width="150"
+                  height="150"
+                  alt="logo-only"
+                />
                 <CardTitle className="text-2xl">Sign Up</CardTitle>
                 <CardDescription>
                   Enter your email below to login to your account.
@@ -118,14 +124,14 @@ export default function SignUp({
             )}
           </form>
         </div>
-      </div>
-      <div className="hidden bg-muted lg:block p-3 bg-midnight">
+      </div> */}
+      <div className="hidden dark:bg-cloud lg:block p-3 bg-onyx">
         <Image
           src="/signup-amico.png"
           alt="Image"
           width="1920"
           height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="object-cover"
         />
       </div>
     </div>

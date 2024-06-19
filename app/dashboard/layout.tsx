@@ -1,45 +1,61 @@
+import { Toaster } from "@/components/ui/sonner";
 import { createClient } from "@/utils/supabase/server";
+import {
+  Check,
+  CircleAlert,
+  CircleEllipsis,
+  CircleX,
+  TriangleAlert,
+} from "lucide-react";
 
 import { redirect } from "next/navigation";
 
 import Header from "./_components/Header";
 import Sidebar from "./_components/Sidebar";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
-export const metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: "SH Dashboard",
-  description: "System management dashboard",
-};
-
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-    const supabase = createClient();
-    
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-        return redirect("/login");
-    }
+  if (!user) {
+    return redirect("/login");
+  }
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] ">
+      <Sidebar />
+      <main className="flex flex-1 flex-col ">
+        <Header />
 
-        <Sidebar />
-        <main className="flex flex-1 flex-col ">
-            <Header />
-            <div className="p-4 sm:px-6 sm:py-0 bg-cloud dark:bg-darknight h-full max-h-full">
-                {children}
-            </div>
-            
-        </main>
+        <div className="p-4 sm:px-6 sm:py-0 bg-cloud dark:bg-darknight h-full max-h-full">
+          {children}
+        </div>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            unstyled: false,
+            classNames: {
+              error: 'bg-red-400 text-cloud',
+              success: 'bg-green-400 text-cloud',
+              warning: 'bg-yellow-400 text-cloud',
+              info: 'bg-blue-400 text-cloud',
+            },
+          }}
+          icons={{
+            success: <Check />,
+            info: <CircleAlert />,
+            warning: <TriangleAlert />,
+            error: <CircleX />,
+            loading: <CircleEllipsis />,
+          }}
+        />
+      </main>
     </div>
   );
 }

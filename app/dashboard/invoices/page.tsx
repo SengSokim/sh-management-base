@@ -1,27 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
   Copy,
-  CreditCard,
   File,
-  Home,
-  LineChart,
   ListFilter,
-  MoreHorizontal,
   MoreVertical,
-  Package,
-  Package2,
-  PanelLeft,
-  Search,
-  Settings,
-  ShoppingCart,
-  Truck,
-  Users2,
+  Printer,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -54,15 +41,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 
 import { useInvoices } from "@/app/hooks/useInvoices";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Table,
   TableBody,
@@ -71,21 +55,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import { formatCurrency, formatDate } from "@/lib/helper";
+import {
+  copyToClipboard,
+  exportTable,
+  formatCurrency,
+  formatDate,
+  leadingZeros,
+} from "@/lib/helper";
 import { AddInvoiceV2 } from "./_components/AddInvoiceV2";
-import SuccessAlert from "@/components/SuccessAlert";
 import { PaginationControls } from "../_components/PaginationControls";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 function Invoices({
   searchParams,
@@ -93,8 +80,6 @@ function Invoices({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { invoices, getInvoices, updateStatus, deleteInvoice } = useInvoices();
-  const [showToast, setShowToast] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(new Date());
   const [invoiceIndex, setInvoiceIndex] = useState(0);
   const router = useRouter();
   const supabase = createClient();
@@ -108,11 +93,6 @@ function Invoices({
         { event: "*", schema: "public", table: "invoices" },
         (payload: any) => {
           getInvoices();
-          setShowToast(true);
-
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000);
         }
       )
       .subscribe();
@@ -173,10 +153,14 @@ function Invoices({
 
   const removeInvoice = async (id: Number) => {
     deleteInvoice(id);
+
+    toast.success(`Invoice has been deleted successfully!`);
   };
 
   const updateStatusInvoice = async (id: Number) => {
     updateStatus(id);
+
+    toast.success(`Invoice has been marked as paid!`);
   };
 
   const page = searchParams["page"] ?? "1";
@@ -186,13 +170,57 @@ function Invoices({
   const end = start + Number(per_page);
 
   const paginatedData = invoices.slice(start, end);
+
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    const printContents = printRef.current?.innerHTML;
+
+    if (printContents) {
+      const printWindow = window.open("", "", "height=500,width=800");
+      if (printWindow) {
+        printWindow.document.write("<html><head><title>Print</title>");
+        const linkElement = printWindow.document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href =
+          "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css";
+
+        linkElement.onload = () => {
+          printWindow.document.write("</head><body>");
+          printWindow.document.write(printContents);
+          printWindow.document.write("</body></html>");
+          printWindow.document.close();
+          const images = printWindow.document.images;
+          const totalImages = images.length;
+          let loadedImages = 0;
+
+          if (totalImages === 0) {
+            printWindow.print();
+          } else {
+            for (let i = 0; i < totalImages; i++) {
+              images[i].onload = () => {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                  printWindow.print();
+                }
+              };
+              images[i].onerror = () => {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                  printWindow.print();
+                }
+              };
+            }
+          }
+        };
+        printWindow.document.head.appendChild(linkElement);
+      }
+    }
+  };
   return (
     <div className="">
-      {showToast && <SuccessAlert />}
-      <title>Invoices</title>
       <h1 className="text-[32px] font-bold ">Invoices</h1>
       <main className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-        
         <div className="grid items-start gap-4 md:gap-8 lg:col-span-2">
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
             <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
@@ -264,75 +292,104 @@ function Invoices({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="expandIcon" Icon={File} iconPlacement="left" className="ml-3">
+              <Button
+                variant="expandIcon"
+                Icon={File}
+                iconPlacement="left"
+                className="ml-3"
+                onClick={() =>
+                  exportTable(invoices, "Invoice", "InvoiceExport")
+                }
+              >
                 Export
               </Button>
             </div>
 
             <Card x-chunk="dashboard-05-chunk-3">
               <CardHeader className="px-7">
-                <CardTitle>Orders</CardTitle>
+                <CardTitle>Invoices</CardTitle>
                 <CardDescription>
-                  Recent orders from your store.
+                  Recent invoices from your store. <br />
+                  Total record(s): {invoices.length}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>#</TableHead>
-                      <TableHead>Customer</TableHead>
+                      <TableHead className="w-[10%]">#</TableHead>
+                      <TableHead className="w-[20%]">Customer</TableHead>
 
-                      <TableHead className="hidden sm:table-cell">
+                      <TableHead className="w-[20%] sm:table-cell">
                         Status
                       </TableHead>
-                      <TableHead className="hidden md:table-cell">
+                      <TableHead className="w-[20%] md:table-cell">
                         Date
                       </TableHead>
-                      <TableHead className="hidden md:table-cell">
+                      <TableHead className="w-[20%] md:table-cell">
                         Paid Date
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedData.map((invoice: any, index: any) => (
-                      <TableRow
-                        key={index}
-                        className="hover:bg-anti-flash-white"
-                        onClick={() =>
-                          setInvoiceIndex(
-                            index + (Number(page) - 1) * Number(per_page)
-                          )
-                        }
-                      >
-                        <TableCell>
-                          {index + (Number(page) - 1) * Number(per_page) + 1}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">
-                            {invoice.clients?.name}
-                          </div>
-                          <div className="hidden text-sm text-muted-foreground md:inline">
-                            {invoice.clients?.email}
-                          </div>
-                        </TableCell>
+                    {paginatedData ? (
+                      paginatedData.map((invoice: any, index: any) => (
+                        <TableRow
+                          key={index}
+                          className="hover:bg-anti-flash-white"
+                          onClick={() =>
+                            setInvoiceIndex(
+                              index + (Number(page) - 1) * Number(per_page)
+                            )
+                          }
+                        >
+                          <TableCell>
+                            {index + (Number(page) - 1) * Number(per_page) + 1}
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {invoice.clients?.name}
+                            </div>
+                            <div className=" text-sm text-muted-foreground md:inline">
+                              {invoice.clients?.email}
+                            </div>
+                          </TableCell>
 
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge
-                            className="text-xs capitalize"
-                            variant="secondary"
-                          >
-                            {invoice.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {formatDate(invoice.created_at, "DD MMM YYYY")}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {formatDate(invoice.paid_at, "DD MMM YYYY")}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          <TableCell className=" sm:table-cell">
+                            <Badge
+                              className="text-xs capitalize"
+                              variant="secondary"
+                            >
+                              {invoice.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className=" md:table-cell">
+                            {formatDate(invoice.created_at, "DD MMM YYYY")}
+                          </TableCell>
+                          <TableCell className=" md:table-cell">
+                            {formatDate(invoice.paid_at, "DD MMM YYYY")}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <>
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <Skeleton className="h-8" />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <Skeleton className="h-8" />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <Skeleton className="h-8" />
+                          </TableCell>
+                        </TableRow>
+                      </>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -348,18 +405,73 @@ function Invoices({
 
         <div>
           <Card className="h-[220px]"></Card>
-          <Card className="overflow-hidden mt-3" x-chunk="dashboard-05-chunk-4">
-            <CardHeader className="flex flex-row items-start bg-muted/50">
+          <Card
+            className="overflow-hidden mt-3"
+            x-chunk="dashboard-05-chunk-4"
+            ref={printRef}
+          >
+            <div className="ml-auto flex flex-col items-end gap-1 p-3">
+              <div className="flex gap-3">
+                <Button
+                  size="sm"
+                  variant="gooeyLeft"
+                  className="h-8 gap-1"
+                  onClick={() => handlePrint()}
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
+                    Print
+                  </span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
+                      <MoreVertical className="h-3.5 w-3.5" />
+                      <span className="sr-only">More</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={(e: any) =>
+                        removeInvoice(invoices[invoiceIndex]?.id)
+                      }
+                      className="hover:bg-zinc-300 text-red-400"
+                    >
+                      Trash{" "}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            <CardHeader className="flex flex-row justify-between items-end bg-muted/50">
+              <Image
+                src="/sh.png"
+                className=""
+                priority
+                width="70"
+                height="70"
+                alt="logo"
+              ></Image>
               <div className="grid gap-0.5">
                 <CardTitle className="group flex items-center gap-2 text-lg">
-                  Order
+                  Invoice #SH-
+                  {leadingZeros(invoices[invoiceIndex]?.invoice_number)}
                   <Button
                     size="icon"
-                    variant="outline"
-                    className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                    variant="ringHover"
+                    className="h-6 w-6"
+                    onClick={() =>
+                      copyToClipboard(
+                        `#SH-${leadingZeros(
+                          invoices[invoiceIndex]?.invoice_number
+                        )}`
+                      )
+                    }
                   >
                     <Copy className="h-3 w-3" />
-                    <span className="sr-only">Copy Order ID</span>
+                    <span className="sr-only">Copy Invoice ID</span>
                   </Button>
                 </CardTitle>
                 <CardDescription>
@@ -399,7 +511,7 @@ function Invoices({
                               updateStatusInvoice(invoices[invoiceIndex]?.id)
                             }
                           >
-                            <div className="group text-gold hover:text-gold/60 transition duration-300">
+                            <div className="group text-gold hover:text-gold/60 transition duration-300 ">
                               Update
                               <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-gold"></span>
                             </div>
@@ -412,42 +524,13 @@ function Invoices({
                   )}
                 </CardDescription>
               </div>
-              <div className="ml-auto flex items-center gap-1">
-                <Button size="sm" variant="gooeyLeft" className="h-8 gap-1">
-                  <Truck className="h-3.5 w-3.5" />
-                  <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                    Track Order
-                  </span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
-                      <MoreVertical className="h-3.5 w-3.5" />
-                      <span className="sr-only">More</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem>Export</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={(e: any) =>
-                        removeInvoice(invoices[invoiceIndex]?.id)
-                      }
-                      className="hover:bg-zinc-300 text-red-400"
-                    >
-                      Trash{" "}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </CardHeader>
             <CardContent className="p-6 text-sm">
               <div className="grid gap-3">
                 <div className="font-semibold">Order Details </div>
-                <Table className="w-[400px]">
+                <Table className="table-auto">
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="">
                       <TableHead>Item Name</TableHead>
                       <TableHead>Quantity</TableHead>
                       <TableHead>Unit Price</TableHead>

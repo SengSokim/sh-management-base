@@ -1,13 +1,5 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,32 +16,25 @@ import {
   Home,
   LineChart,
   Menu,
-  Package,
-  Package2,
   ShoppingCart,
+  Truck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+
 import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
 
 function Header() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter(); // For navigation after sign out
-
+  const pathname = usePathname()
+  const router = useRouter(); 
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = createClient(); // Initialize Supabase client
+      const supabase = createClient();
       const {
         data: { user },
         error,
@@ -75,16 +60,17 @@ function Header() {
 
   if (loading) {
     return (
-      <div className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6"></div>
+      <div className="flex h-14 items-center gap-4 bg-darknight px-4 lg:h-[60px] lg:px-6"></div>
     );
   }
+  
   return (
     <div className="bg-cloud dark:bg-darknight">
-      <header className="flex h-14 items-center gap-4 bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+      <header className="flex h-14 items-center gap-4 px-4 lg:h-[60px] lg:px-6">
         <Sheet>
           <SheetTrigger asChild>
             <Button
-              variant="outline"
+              variant="ringHover"
               size="icon"
               className="shrink-0 md:hidden"
             >
@@ -92,77 +78,80 @@ function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col">
-            <nav className="grid gap-2 text-lg font-medium">
+          <SheetContent side="left" className="flex flex-col flex-1 w-64 bg-darknight lg:max-w-screen-lg overflow-y-scroll max-h-screen" >
+            <Image
+              src={"/logo.svg"}
+              width="150"
+              height="150"
+              alt="logo"
+              priority
+            ></Image>
+            
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4 ">
               <Link
-                href="#"
-                className="flex items-center gap-2 text-lg font-semibold"
+                href="/dashboard"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue ${
+                  pathname == "/dashboard"
+                    ? "bg-cloud text-black font-bold"
+                    : ""
+                }`}
               >
-                <Package2 className="h-6 w-6" />
-                <span className="sr-only">Acme Inc</span>
+                <Home className="h-4 w-4" />
+                Home
               </Link>
               <Link
-                href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                href="/dashboard/invoices"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue ${
+                  pathname.includes("invoices")
+                    ? "bg-cloud text-black font-bold"
+                    : ""
+                }`}
               >
-                <Home className="h-5 w-5" />
-                Dashboard
-              </Link>
-              <Link
-                href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground"
-              >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4" />
                 Invoices
-                <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                  6
-                </Badge>
               </Link>
               <Link
-                href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                href="/dashboard/customers"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue ${
+                  pathname.includes("customers")
+                    ? "bg-cloud text-black font-bold"
+                    : ""
+                }`}
               >
-                <Package className="h-5 w-5" />
-                Products
-              </Link>
-              <Link
-                href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-              >
-                <Users className="h-5 w-5" />
+                <Users className="h-4 w-4" />
                 Customers
               </Link>
               <Link
-                href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                href="/dashboard/suppliers"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue ${
+                  pathname.includes("suppliers")
+                    ? "bg-cloud text-black font-bold"
+                    : ""
+                }`}
               >
-                <LineChart className="h-5 w-5" />
-                Analytics
+                <Truck className="h-4 w-4" />
+                Suppliers
               </Link>
               <Link
                 href="#"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue"
               >
-                <Cog className="h-5 w-5" />
-                Setting
+                <LineChart className="h-4 w-4" />
+                Inventory
+              </Link>
+              <Link
+                href="/dashboard/settings/general"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-alice-blue ${
+                  pathname.includes("settings")
+                    ? "bg-cloud text-black font-bold"
+                    : ""
+                }`}
+              >
+                <Cog className="h-4 w-4" />
+                Settings
               </Link>
             </nav>
-            <div className="mt-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upgrade to Pro</CardTitle>
-                  <CardDescription>
-                    Unlock all features and get unlimited access to our support
-                    team.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button size="sm" className="w-full">
-                    Upgrade
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            
           </SheetContent>
         </Sheet>
         <div className="w-full flex-1">
@@ -186,14 +175,21 @@ function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+            
             <DropdownMenuSeparator />
+         
+            <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
 
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <form action={signOut}>
-                <Button type="submit" variant="gooeyRight" className="py-2 px-4 rounded-md no-underline w-full">
+                <Button
+                  type="submit"
+                  variant="gooeyRight"
+                  className="py-2 px-4 rounded-md no-underline w-full"
+                >
                   Logout
                 </Button>
               </form>

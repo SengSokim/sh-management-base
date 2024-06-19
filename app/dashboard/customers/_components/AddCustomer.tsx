@@ -24,6 +24,7 @@ export default function AddCustomer() {
 
     addCustomer(name, phone, address, email);
     setOpen(false);
+    
   };
   return (
     <div className="border rounded">

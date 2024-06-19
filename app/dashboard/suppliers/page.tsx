@@ -1,6 +1,5 @@
 "use client";
 import { useSuppliers } from "@/app/hooks/useSuppliers";
-import SuccessAlert from "@/components/SuccessAlert";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import {
@@ -11,11 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/context/UserContext";
+import { exportTable } from "@/lib/helper";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowRightIcon, File, ListFilter } from "lucide-react";
-import Head from "next/head";
+import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddSupplierV2 } from "./_components/AddSupplierV2";
 import { SupplierTable } from "./_components/SupplierTable";
@@ -26,9 +26,9 @@ function Suppliers({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { suppliers, getSuppliers } = useSuppliers();
-  const [showToast, setShowToast] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const {user} = useUser();
 
   useEffect(() => {
     getSuppliers();
@@ -39,11 +39,6 @@ function Suppliers({
         { event: "*", schema: "public", table: "suppliers" },
         (payload: any) => {
           getSuppliers();
-          setShowToast(true);
-
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000);
         }
       )
       .subscribe();
@@ -60,10 +55,6 @@ function Suppliers({
   const paginatedData = suppliers.slice(start, end);
   return (
     <div>
-      {showToast && <SuccessAlert />}
-      <Head>
-        <title>Suppliers</title>
-      </Head>
       <h1 className="text-[32px] font-bold">Suppliers</h1>
       <div className="">
         <div className="flex items-center gap-2 py-3">
@@ -92,6 +83,7 @@ function Suppliers({
             Icon={File}
             iconPlacement="left"
             className=""
+            onClick={() => exportTable(suppliers,"Supplier","SupplierExport")}
           >
             Export
           </Button>
@@ -99,10 +91,12 @@ function Suppliers({
         </div>
       </div>
       <Card x-chunk="dashboard-06-chunk-0">
+      
         <SupplierTable
           suppliers={paginatedData}
           page={page}
           per_page={per_page}
+          total_record={suppliers.length}
         />
         <CardFooter>
           <PaginationControls

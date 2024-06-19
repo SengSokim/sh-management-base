@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { SubmitButton } from "./submit-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,11 +40,17 @@ export default function Login({
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 ">
       <title>Log in</title>
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-12 bg-midnight">
         <div className="mx-auto grid w-[350px] gap-6">
           <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
             <Card className="w-full max-w-sm dark:text-black">
               <CardHeader>
+                <Image
+                  src={"/logo.svg"}
+                  width="150"
+                  height="150"
+                  alt="logo-only"
+                />
                 <CardTitle className="text-2xl text-midnight">Login</CardTitle>
                 <CardDescription>
                   Enter your email below to login to your account.
@@ -72,7 +76,6 @@ export default function Login({
                     placeholder="password"
                     required
                   />
-                  
                 </div>
               </CardContent>
               <CardFooter className="grid gap-4">
@@ -83,15 +86,14 @@ export default function Login({
                 >
                   Sign in
                 </Button>
-                <div className="mt-4 text-center text-sm">
+                {/* <div className="mt-4 text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <Button variant="link">
                     <Link href={"signup"} className="underline">
                       Sign up
                     </Link>
                   </Button>
-                  
-                </div>
+                </div> */}
               </CardFooter>
             </Card>
             {searchParams?.message && (
@@ -102,14 +104,14 @@ export default function Login({
           </form>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block p-3 bg-midnight">
+      <div className="hidden dark:bg-cloud lg:block p-3 bg-onyx">
         <Image
           src="/login-amico.png"
           alt="Image"
           width={1920}
           height={1080}
           priority
-          className="object-cover dark:brightness-[0.2] dark:grayscale"
+          className="object-cover"
         />
       </div>
     </div>

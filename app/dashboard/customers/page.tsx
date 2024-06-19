@@ -1,6 +1,5 @@
 "use client";
 import { useCustomers } from "@/app/hooks/useCustomers";
-import SuccessAlert from "@/components/SuccessAlert";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import {
@@ -15,10 +14,11 @@ import { createClient } from "@/utils/supabase/client";
 import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddCustomerV2 } from "./_components/AddCustomerV2";
 import { CustomerTable } from "./_components/CustomerTable";
+import { exportTable } from "@/lib/helper";
 
 function Customers({
   searchParams,
@@ -26,7 +26,6 @@ function Customers({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { customers, getCustomers } = useCustomers();
-  const [showToast, setShowToast] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -39,11 +38,6 @@ function Customers({
         { event: "*", schema: "public", table: "clients" },
         (payload: any) => {
           getCustomers();
-          setShowToast(true);
-
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000);
         }
       )
       .subscribe();
@@ -60,8 +54,6 @@ function Customers({
   const paginatedData = customers.slice(start, end);
   return (
     <div className="flex flex-col">
-      {showToast && <SuccessAlert />}
-      <title>Customers</title>
       <h1 className="text-[32px] font-bold">Customers</h1>
       <div className="">
         <div className="flex items-center gap-2 py-3">
@@ -90,6 +82,7 @@ function Customers({
             Icon={File}
             iconPlacement="left"
             className=""
+            onClick={() => exportTable(customers, "Customer","CustomerExport")}
           >
             Export
           </Button>
@@ -101,6 +94,7 @@ function Customers({
           customers={paginatedData}
           page={page}
           per_page={per_page}
+          total_record={customers.length}
         />
         <CardFooter>
           <PaginationControls

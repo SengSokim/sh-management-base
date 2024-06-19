@@ -1,23 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerPortal,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -25,7 +11,6 @@ import {
 import { MinusIcon, PlusCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 import { useInvoices } from "@/app/hooks/useInvoices";
 
@@ -39,7 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCustomers } from "@/app/hooks/useCustomers";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Card,
   CardContent,
@@ -56,7 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/helper";
+import { formatCurrency, leadingZeros } from "@/lib/helper";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -69,6 +53,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { sendNotification } from "@/utils/telegram/telegrambot";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   client_id: z.string({
@@ -80,6 +67,7 @@ const formSchema = z.object({
   status: z.string({
     required_error: "Please select the status.",
   }),
+  send_to_telegram: z.boolean().default(false).optional(),
 });
 interface productItem {
   product_name: string;
@@ -140,6 +128,7 @@ export function AddInvoiceV2() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       shipping_fees: 0,
+      send_to_telegram: false,
     },
   });
 
@@ -147,16 +136,50 @@ export function AddInvoiceV2() {
     const client_id = parseInt(values.client_id);
     const shipping_fees = values.shipping_fees;
     const status = values.status;
-
+    const is_send_to_telegram = values.send_to_telegram;
     if (
       !productItems[0].product_name ||
       !productItems[0].product_price ||
       !productItems[0].product_description ||
       !productItems[0].product_quantity
     ) {
-      alert("Please enter atleast one product detail");
+      toast.info("Please enter atleast one product detail");
     } else {
-      addInvoice(client_id, shipping_fees, status, productItems);
+      const sendToTelegram = async (details: any) => {
+        const productsText = details.products.map((product:any) => 
+          `<b>Product Name</b>: ${product.name}\n`+
+          `<b>Description</b>: ${product.description}\n`+
+          `<b>Quantity</b>: ${product.quantity}\n`+
+          `<b>Unit Price</b>: ${formatCurrency(product.unit_price)}\n`+
+          `<b>Total</b>: ${formatCurrency(product.total)}\n`
+        ).join('\n');
+        const text =
+          `📑<b>Client Info</b>\n` +
+          `<b>Name</b>: ${details.clients.name}\n` +
+          `<b>Phone</b>: ${details.clients.phone}\n` +
+          `<b>Address</b>: ${details.clients.address}\n` +
+          `<b>Email</b>: ${details.clients.email}\n` +
+          `🧾<b>Invoice Info</b>\n` +
+          `<b>Invoice Number</b>: #SH-${leadingZeros(details.invoice_number)}\n` +
+          `=============================\n`+
+          `${productsText}`+
+          `=============================\n`+
+          `<b>Status</b>: ${details.status}\n` +
+          `<b>Shipping Fees</b>: ${formatCurrency(details.shipping_fees)}\n` +
+          `<b>Tax Charges</b>: ${formatCurrency(details.tax_charges)}\n` +
+          `<b>Sub Total</b>: ${formatCurrency(details.sub_total)}\n` +
+          `=============================\n`+
+          `<b>Grand Total</b>: ${formatCurrency(details.grand_total)}\n`;
+        await sendNotification(text, "html");
+      };
+      addInvoice(client_id, shipping_fees, status, productItems).then(
+        (result) => {
+          if (result && is_send_to_telegram) {
+            sendToTelegram(result[0]);
+          }
+        }
+      );
+
       setOpen(false);
 
       form.reset();
@@ -168,6 +191,8 @@ export function AddInvoiceV2() {
           product_description: "",
         },
       ]);
+
+      toast.success(`Invoice has been created successfully!`);
     }
   }
   return (
@@ -177,7 +202,7 @@ export function AddInvoiceV2() {
           Create New Invoice
         </Button>
       </SheetTrigger>
-      <SheetContent className="min-w-[600px] overflow-auto dark:bg-midnight">
+      <SheetContent className="min-w-[600px] overflow-auto">
         <SheetHeader>
           <SheetTitle className="">Enter Invoice details</SheetTitle>
           <SheetDescription>
@@ -232,7 +257,7 @@ export function AddInvoiceV2() {
                         </TableHead>
                         <TableHead className="w-[20%]">Description</TableHead>
                         <TableHead className="w-[20%]">Quantity</TableHead>
-                        <TableHead className="w-[20%]">Price</TableHead>
+                        <TableHead className="w-[20%]">Unit Price</TableHead>
                         <TableHead className="w-[20%]">Total</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -283,7 +308,7 @@ export function AddInvoiceV2() {
                           </TableCell>
                           <TableCell>
                             <Label htmlFor="product_price" className="sr-only">
-                              Price
+                              Unit Price
                             </Label>
                             <Input
                               id="product_price"
@@ -374,11 +399,30 @@ export function AddInvoiceV2() {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                variant="gooeyRight"
-                className="btn mt-5"
-              >
+              <FormField
+                control={form.control}
+                name="send_to_telegram"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow mt-3 bg-cloud text-darknight">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none ">
+                      <FormLabel>
+                        Send to Telegram
+                      </FormLabel>
+                      <FormDescription>
+                        Check to send the invoice to Telegram.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" variant="gooeyRight" className="btn mt-5">
                 Save change
               </Button>
             </form>

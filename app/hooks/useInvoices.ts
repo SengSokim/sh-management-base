@@ -29,13 +29,13 @@ export const useInvoices = () => {
                 quantity,
                 total
             ),
+            invoice_number,
             shipping_fees,
             tax_charges,
             sub_total,
             grand_total,
             created_at,
-            paid_at,
-            description
+            paid_at
         `)
         .eq('admin_id',user?.id)
         .order('id', { ascending: true })
@@ -54,7 +54,7 @@ export const useInvoices = () => {
     const addInvoice = async (client_id:number,shipping_fees:number, status:string,productItems:Array<any>) => {
        
         if(status == 'unpaid') {
-        now = null;
+            now = null;
         }
         const newProductItems: productItem[] = productItems.map((item) => {
             return {
@@ -70,38 +70,63 @@ export const useInvoices = () => {
         const tax_charges = sub_total * 0.1;
         const cost_of_shipping = shipping_fees ? shipping_fees : 0;
         const grand_total = sub_total + tax_charges + cost_of_shipping;
-        const { data, error } = await supabase
-        .from('invoices')
-        .insert([
-        {   
-            client_id: client_id,
-            status: status,
-            paid_at: now,
-            shipping_fees: cost_of_shipping,
-            tax_charges: sub_total * 0.1,
-            sub_total:sub_total,
-            grand_total: grand_total
-        },
-        ])
-        .select()
-        if (error) {
-            console.error('Error inserting invoice:', error);
+        const { data: invoiceData, error: invoiceError } = await supabase
+        .rpc('handle_new_invoice', {
+            p_client_id: client_id,
+            p_status: status,
+            p_shipping_fees: cost_of_shipping,
+            p_paid_at: now,
+            p_tax_charges: tax_charges,
+            p_sub_total: sub_total,
+            p_grand_total: grand_total,
+            p_product_items: newProductItems
+        });
+        if (invoiceError) {
+            console.error('Error inserting invoice:', invoiceError);
             return;
-          }
-          
-          if (!data || data.length === 0) {
-            console.error('No data returned from insert');
+        }
+
+        const invoiceId = invoiceData;
+
+        if (!invoiceId) {
+            console.error('No invoice ID returned from insert');
             return;
-          }
-        const invoiceId = data[0].id;
-        newProductItems.forEach(item => {
-            item.invoice_id = invoiceId;
-        })
-    
-        await supabase
-        .from('products')
-        .insert(newProductItems)
-        .select()
+        }
+
+        const { data: invoices, error: fetchError } = await supabase
+            .from('invoices')
+            .select(`
+                id,
+                status,
+                clients (
+                    name,
+                    email,
+                    phone,
+                    address
+                ),
+                products (
+                    name,
+                    description,
+                    unit_price,
+                    quantity,
+                    total
+                ),
+                invoice_number,
+                shipping_fees,
+                tax_charges,
+                sub_total,
+                grand_total,
+                created_at,
+                paid_at
+            `)
+            .eq('id', invoiceId);
+
+        if (fetchError) {
+            console.error('Error fetching invoice:', fetchError);
+            return;
+        }
+
+        return invoices;
     }
             
     const updateInvoice = async(id:Number,client_id:number,status:string) => {

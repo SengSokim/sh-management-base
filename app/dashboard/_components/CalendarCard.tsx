@@ -6,7 +6,6 @@ import { Calendar } from "@/components/ui/calendar"
 
 export function CalendarCard() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
-  console.log(date)
   return (
     <Calendar
       mode="single"
