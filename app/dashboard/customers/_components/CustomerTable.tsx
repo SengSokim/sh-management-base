@@ -68,16 +68,23 @@ export function CustomerTable({
   };
 
   const editCustomer = async () => {
-    updateCustomer(id, name, phone, address, email);
+    updateCustomer(id, name, phone, address, email).then((result:any) => {
+      if(result.success) {
+        toast.success(`Customer has been updated successfully!`)
+      }
+    });
     setOpen(false);
 
-    toast.success(`Customer has been updated successfully!`)
   };
 
   const removeClient = async (id: Number) => {
-    deleteCustomer(id);
+    deleteCustomer(id).then((result) => {
+      if(result.success) {
+        toast.success(`Customer has been deleted successfully!`)
+      }
+    });
+    setOpen(false);
 
-    toast.success(`Customer has been deleted successfully!`)
   };
 
   return (
@@ -113,7 +120,7 @@ export function CustomerTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers ? (
+            {
               customers
                 .filter((item: any) => item.name.toLowerCase().includes(search))
                 .map((customer: any, index: number) => (
@@ -249,25 +256,7 @@ export function CustomerTable({
                     </TableCell>
                   </TableRow>
                 ))
-            ) : (
-              <>
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="h-8" />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="h-8" />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="h-8" />
-                  </TableCell>
-                </TableRow>
-              </>
-            )}
+            }
           </TableBody>
         </Table>
       </CardContent>

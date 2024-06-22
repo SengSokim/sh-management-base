@@ -191,7 +191,6 @@ export default function Dashboard({
 
   const handlePrint = () => {
     const printContents = printRef.current?.innerHTML;
-    console.log(printContents);
     if (printContents) {
       const printWindow = window.open("", "", "height=500,width=800");
       if (printWindow) {
@@ -211,7 +210,7 @@ export default function Dashboard({
     }
   };
   return (
-    <div>
+    <div className="">
       <title>Dashboard</title>
       <main className="flex flex-1 flex-col gap-4 px-4 md:gap-8 md:px-8">
         <h1 className="text-[32px] font-bold">Home</h1>

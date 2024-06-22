@@ -1,14 +1,14 @@
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client"
 import { useState } from "react"
 
 export const useSettings = () => {
     const [settings, setSettings] = useState<any>([])
-    const supabase = createClient();
+    const supabase = createClient()
     
     const getSettings = async() => {
         const {
             data: { user },
-          } = await supabase.auth.getUser();
+          } = await supabase.auth.getUser()
         let { data: settings, error } = await supabase
         .from('settings')
         .select('*')

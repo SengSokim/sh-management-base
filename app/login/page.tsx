@@ -1,6 +1,6 @@
-import Link from "next/link";
+"use client"
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,27 +14,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useState } from "react";
 
 export default function Login({
   searchParams,
 }: {
   searchParams: { message: string };
 }) {
-  const signIn = async (formData: FormData) => {
-    "use server";
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
 
+    const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
 
-    if (error) {
-      return redirect("/login?message=Could not authenticate user");
+    const response = await fetch('/api/auth/signin', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (response.ok) {
+      router.push('/dashboard');
+    } else {
+      const result = await response.json();
+      router.push(`/login?message=${result.error}`);
     }
-    return redirect("/dashboard");
   };
 
   return (
@@ -42,7 +52,7 @@ export default function Login({
       <title>Log in</title>
       <div className="flex items-center justify-center py-12 bg-midnight">
         <div className="mx-auto grid w-[350px] gap-6">
-          <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
+          <form onSubmit={handleSubmit} className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
             <Card className="w-full max-w-sm dark:text-black">
               <CardHeader>
                 <Image
@@ -65,6 +75,7 @@ export default function Login({
                     type="email"
                     placeholder="Email"
                     className="dark:bg-white"
+                    
                     required
                   />
                 </div>
@@ -82,10 +93,12 @@ export default function Login({
                 <Button
                   variant="gooeyRight"
                   className="w-full text-white bg-seaweed hover:bg-midnight"
-                  formAction={signIn}
+                  type="submit"
+                  disabled={loading}
                 >
-                  Sign in
+                  {loading ? 'Loading...' : 'Sign In'}
                 </Button>
+                
                 {/* <div className="mt-4 text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <Button variant="link">

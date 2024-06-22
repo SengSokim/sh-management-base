@@ -15,6 +15,7 @@ import {
   Cog,
   Home,
   LineChart,
+  LoaderCircle,
   Menu,
   ShoppingCart,
   Truck,
@@ -30,8 +31,8 @@ import Image from "next/image";
 function Header() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const pathname = usePathname()
-  const router = useRouter(); 
+  const pathname = usePathname();
+  const router = useRouter();
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient();
@@ -60,10 +61,12 @@ function Header() {
 
   if (loading) {
     return (
-      <div className="flex h-14 items-center gap-4 bg-darknight px-4 lg:h-[60px] lg:px-6"></div>
+      <div className="flex h-14 items-center gap-4 dark:bg-darknight px-4 lg:h-[60px] lg:px-6">
+        <LoaderCircle className="text-darknight dark:text-cloud animate-spin mx-auto" />
+      </div>
     );
   }
-  
+
   return (
     <div className="bg-cloud dark:bg-darknight">
       <header className="flex h-14 items-center gap-4 px-4 lg:h-[60px] lg:px-6">
@@ -78,7 +81,10 @@ function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col flex-1 w-64 bg-darknight lg:max-w-screen-lg overflow-y-scroll max-h-screen" >
+          <SheetContent
+            side="left"
+            className="flex flex-col flex-1 w-64 bg-darknight lg:max-w-screen-lg overflow-y-scroll max-h-screen"
+          >
             <Image
               src={"/logo.svg"}
               width="150"
@@ -86,7 +92,7 @@ function Header() {
               alt="logo"
               priority
             ></Image>
-            
+
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4 ">
               <Link
                 href="/dashboard"
@@ -151,7 +157,6 @@ function Header() {
                 Settings
               </Link>
             </nav>
-            
           </SheetContent>
         </Sheet>
         <div className="w-full flex-1">
@@ -176,24 +181,14 @@ function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-            
+
             <DropdownMenuSeparator />
-         
+
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <form action={signOut}>
-                <Button
-                  type="submit"
-                  variant="gooeyRight"
-                  className="py-2 px-4 rounded-md no-underline w-full"
-                >
-                  Logout
-                </Button>
-              </form>
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>

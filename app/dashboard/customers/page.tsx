@@ -14,12 +14,20 @@ import { createClient } from "@/utils/supabase/client";
 import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddCustomerV2 } from "./_components/AddCustomerV2";
 import { CustomerTable } from "./_components/CustomerTable";
 import { exportTable } from "@/lib/helper";
-
+import CustomerLoading from "./_components/CustomerLoading";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 function Customers({
   searchParams,
 }: {
@@ -31,20 +39,23 @@ function Customers({
 
   useEffect(() => {
     getCustomers();
+    
     const subscribeChannel = supabase
-      .channel("all-clients-changes-follow-up")
+      .channel("all-customers-changes-follow-up")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "clients" },
+        { event: "*", schema: "public", table: "customers" },
         (payload: any) => {
           getCustomers();
         }
       )
       .subscribe();
+    
     return () => {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
+  
   const page = searchParams["page"] ?? "1";
   const per_page = searchParams["per_page"] ?? "10";
 
@@ -52,9 +63,24 @@ function Customers({
   const end = start + Number(per_page);
 
   const paginatedData = customers.slice(start, end);
-  return (
+  return !customers.length ? (
+    <CustomerLoading/>
+  ) :(
     <div className="flex flex-col">
-      <h1 className="text-[32px] font-bold">Customers</h1>
+      <div className="flex justify-between items-center my-3">
+        <h1 className="text-[32px] font-bold ">Customers</h1>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/customers">Customers</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>

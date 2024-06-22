@@ -18,7 +18,16 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddSupplierV2 } from "./_components/AddSupplierV2";
+import SupplierLoading from "./_components/SupplierLoading";
 import { SupplierTable } from "./_components/SupplierTable";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 function Suppliers({
   searchParams,
@@ -28,7 +37,6 @@ function Suppliers({
   const { suppliers, getSuppliers } = useSuppliers();
   const router = useRouter();
   const supabase = createClient();
-  const {user} = useUser();
 
   useEffect(() => {
     getSuppliers();
@@ -53,9 +61,25 @@ function Suppliers({
   const end = start + Number(per_page);
 
   const paginatedData = suppliers.slice(start, end);
-  return (
+
+  return !suppliers.length ? (
+    <SupplierLoading />
+  ) : (
     <div>
-      <h1 className="text-[32px] font-bold">Suppliers</h1>
+      <div className="flex justify-between items-center my-3">
+        <h1 className="text-[32px] font-bold ">Suppliers</h1>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/suppliers">Suppliers</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="">
         <div className="flex items-center gap-2 py-3">
           <DropdownMenu>
@@ -83,7 +107,7 @@ function Suppliers({
             Icon={File}
             iconPlacement="left"
             className=""
-            onClick={() => exportTable(suppliers,"Supplier","SupplierExport")}
+            onClick={() => exportTable(suppliers, "Supplier", "SupplierExport")}
           >
             Export
           </Button>
@@ -91,7 +115,6 @@ function Suppliers({
         </div>
       </div>
       <Card x-chunk="dashboard-06-chunk-0">
-      
         <SupplierTable
           suppliers={paginatedData}
           page={page}

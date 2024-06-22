@@ -1,16 +1,17 @@
-import { createClient } from "@/utils/supabase/client";
+import { success } from "@/lib/helper"
+import { createClient } from "@/utils/supabase/client"
 import { useState } from "react"
 
 export const useSuppliers = () => {
     const [suppliers, setSuppliers] = useState<any>([])
-    const supabase = createClient();
+    const supabase = createClient()
     
     const getSuppliers = async () => {
-        
+        const filter = null
         const {
             data: { user },
-          } = await supabase.auth.getUser();
-        let { data: suppliers, error } = await supabase
+          } = await supabase.auth.getUser()
+        let query = await supabase
         .from('suppliers')
         .select(`
             id,
@@ -21,7 +22,16 @@ export const useSuppliers = () => {
             created_at
         `)
         .eq('admin_id',user?.id)
-        .order('id', { ascending: true })
+        .order('id', { ascending: false })
+
+        if(filter) {
+            query = query.eq('name', filter) 
+        }
+
+        const { data:suppliers, error } = await query
+        if(error) {
+            return 'Cannot get data for suppliers'
+        }
         if(suppliers){
             setSuppliers(suppliers)
         }
@@ -40,6 +50,11 @@ export const useSuppliers = () => {
         },
         ])
         .select()
+
+        if(error) {
+            return error
+        }
+        return success(data)
         
     }
             
@@ -55,6 +70,11 @@ export const useSuppliers = () => {
         })
         .eq('id', id)
         .select()
+
+        if(error) {
+            return error
+        }
+        return success(data)
                 
     }
     const deleteSupplier = async(id:Number) => {
@@ -63,6 +83,11 @@ export const useSuppliers = () => {
         .from('suppliers')
         .delete()
         .eq('id', id)
+
+        if(error) {
+            return error
+        }
+        return success()
         
     }
     return {

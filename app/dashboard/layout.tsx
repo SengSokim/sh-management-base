@@ -33,7 +33,7 @@ export default async function RootLayout({
       <main className="flex flex-1 flex-col ">
         <Header />
 
-        <div className="p-4 sm:px-6 sm:py-0 bg-cloud dark:bg-darknight h-full max-h-full">
+        <div className="p-4 sm:px-6 sm:py-0 bg-cloud dark:bg-darknight h-full max-h-full mb-3">
           {children}
         </div>
         <Toaster
@@ -41,10 +41,10 @@ export default async function RootLayout({
           toastOptions={{
             unstyled: false,
             classNames: {
-              error: 'bg-red-400 text-cloud',
-              success: 'bg-green-400 text-cloud',
-              warning: 'bg-yellow-400 text-cloud',
-              info: 'bg-blue-400 text-cloud',
+              error: 'bg-rose-500 text-cloud',
+              success: 'bg-emerald-500 text-cloud',
+              warning: 'bg-amber-400 text-cloud',
+              info: 'bg-sky-400 text-cloud',
             },
           }}
           icons={{

@@ -58,7 +58,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 const formSchema = z.object({
-  client_id: z.string({
+  customer_id: z.string({
     required_error: "Please select a client.",
   }),
   shipping_fees: z.coerce.number({
@@ -133,7 +133,7 @@ export function AddInvoiceV2() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const client_id = parseInt(values.client_id);
+    const customer_id = parseInt(values.customer_id);
     const shipping_fees = values.shipping_fees;
     const status = values.status;
     const is_send_to_telegram = values.send_to_telegram;
@@ -154,11 +154,11 @@ export function AddInvoiceV2() {
           `<b>Total</b>: ${formatCurrency(product.total)}\n`
         ).join('\n');
         const text =
-          `📑<b>Client Info</b>\n` +
-          `<b>Name</b>: ${details.clients.name}\n` +
-          `<b>Phone</b>: ${details.clients.phone}\n` +
-          `<b>Address</b>: ${details.clients.address}\n` +
-          `<b>Email</b>: ${details.clients.email}\n` +
+          `📑<b>Customer Info</b>\n` +
+          `<b>Name</b>: ${details.customers.name}\n` +
+          `<b>Phone</b>: ${details.customers.phone}\n` +
+          `<b>Address</b>: ${details.customers.address}\n` +
+          `<b>Email</b>: ${details.customers.email}\n` +
           `🧾<b>Invoice Info</b>\n` +
           `<b>Invoice Number</b>: #SH-${leadingZeros(details.invoice_number)}\n` +
           `=============================\n`+
@@ -172,10 +172,13 @@ export function AddInvoiceV2() {
           `<b>Grand Total</b>: ${formatCurrency(details.grand_total)}\n`;
         await sendNotification(text, "html");
       };
-      addInvoice(client_id, shipping_fees, status, productItems).then(
+      addInvoice(customer_id, shipping_fees, status, productItems).then(
         (result) => {
-          if (result && is_send_to_telegram) {
-            sendToTelegram(result[0]);
+          if(result.success) {
+            if (is_send_to_telegram) {
+              sendToTelegram(result.data[0]);
+            }
+            toast.success(`Invoice has been created successfully!`);
           }
         }
       );
@@ -192,7 +195,6 @@ export function AddInvoiceV2() {
         },
       ]);
 
-      toast.success(`Invoice has been created successfully!`);
     }
   }
   return (
@@ -215,7 +217,7 @@ export function AddInvoiceV2() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
-                name="client_id"
+                name="customer_id"
                 render={({ field }) => (
                   <FormItem>
                     <Label htmlFor="clients" className="text-right">
@@ -408,6 +410,7 @@ export function AddInvoiceV2() {
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        className="bg-french-gray"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none ">

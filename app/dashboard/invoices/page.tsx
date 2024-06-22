@@ -73,7 +73,15 @@ import { PaginationControls } from "../_components/PaginationControls";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-
+import InvoiceLoading from "./_components/InvoiceLoading";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 function Invoices({
   searchParams,
 }: {
@@ -152,15 +160,19 @@ function Invoices({
   };
 
   const removeInvoice = async (id: Number) => {
-    deleteInvoice(id);
-
-    toast.success(`Invoice has been deleted successfully!`);
+    deleteInvoice(id).then((result) => {
+      if (result.success) {
+        toast.success(`Invoice has been deleted successfully!`);
+      }
+    });
   };
 
   const updateStatusInvoice = async (id: Number) => {
-    updateStatus(id);
-
-    toast.success(`Invoice has been marked as paid!`);
+    updateStatus(id).then((result) => {
+      if (result.success) {
+        toast.success(`Invoice has been marked as paid!`);
+      }
+    });
   };
 
   const page = searchParams["page"] ?? "1";
@@ -173,13 +185,13 @@ function Invoices({
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => {
+  const handlePrint = (invoice_number:any) => {
     const printContents = printRef.current?.innerHTML;
 
     if (printContents) {
       const printWindow = window.open("", "", "height=500,width=800");
       if (printWindow) {
-        printWindow.document.write("<html><head><title>Print</title>");
+        printWindow.document.write(`<html><head><title>InvoiceSH-${invoice_number}</title>`);
         const linkElement = printWindow.document.createElement("link");
         linkElement.rel = "stylesheet";
         linkElement.href =
@@ -217,11 +229,29 @@ function Invoices({
       }
     }
   };
-  return (
+  return !invoices.length ? (
+    <InvoiceLoading />
+  ) : (
     <div className="">
-      <h1 className="text-[32px] font-bold ">Invoices</h1>
+      <div className="flex justify-between items-center my-3">
+        <h1 className="text-[32px] font-bold ">Invoices</h1>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/invoices">
+                Invoices
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <main className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
         <div className="grid items-start gap-4 md:gap-8 lg:col-span-2">
+          {/* Create invoice, total this week, total this month*/}
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
             <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
               <CardHeader className="pb-3 ">
@@ -305,6 +335,7 @@ function Invoices({
               </Button>
             </div>
 
+            {/* Invoices table */}
             <Card x-chunk="dashboard-05-chunk-3">
               <CardHeader className="px-7">
                 <CardTitle>Invoices</CardTitle>
@@ -348,10 +379,10 @@ function Invoices({
                           </TableCell>
                           <TableCell>
                             <div className="font-medium">
-                              {invoice.clients?.name}
+                              {invoice.customers?.name}
                             </div>
                             <div className=" text-sm text-muted-foreground md:inline">
-                              {invoice.clients?.email}
+                              {invoice.customers?.email}
                             </div>
                           </TableCell>
 
@@ -403,60 +434,82 @@ function Invoices({
           </div>
         </div>
 
+        {/* Invoice Preview */}
         <div>
           <Card className="h-[220px]"></Card>
+          <div className="ml-auto flex flex-col items-end gap-1 py-3">
+            <div className="flex gap-3">
+              <Button
+                size="sm"
+                variant="gooeyLeft"
+                className="h-8 gap-1"
+                onClick={() => handlePrint(leadingZeros(invoices[invoiceIndex]?.invoice_number))}
+              >
+                <Printer className="h-3.5 w-3.5" />
+                <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
+                  Print
+                </span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
+                    <MoreVertical className="h-3.5 w-3.5" />
+                    <span className="sr-only">More</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e: any) =>
+                      removeInvoice(invoices[invoiceIndex]?.id)
+                    }
+                    className="hover:bg-zinc-300 text-red-400"
+                  >
+                    Trash{" "}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
           <Card
             className="overflow-hidden mt-3"
             x-chunk="dashboard-05-chunk-4"
             ref={printRef}
           >
-            <div className="ml-auto flex flex-col items-end gap-1 p-3">
-              <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  variant="gooeyLeft"
-                  className="h-8 gap-1"
-                  onClick={() => handlePrint()}
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                    Print
-                  </span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
-                      <MoreVertical className="h-3.5 w-3.5" />
-                      <span className="sr-only">More</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={(e: any) =>
-                        removeInvoice(invoices[invoiceIndex]?.id)
-                      }
-                      className="hover:bg-zinc-300 text-red-400"
-                    >
-                      Trash{" "}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+            <div className="text-center mx-3">
+              <h1 className="font-bold text-3xl mt-1">
+                Senghour Printing
+              </h1>
+              <p className="mt-3 text-sm">VATTIN Number: 123123123123213</p>
+              <p className="mt-3 text-sm">
+                No.38A, Sangkat Beoung Tum Pun, Khan Mean chey, Phnom Penh
+                (Infront of Khmer Soviet Friendship Hospital)
+              </p>
+              <p className="mt-3 text-sm">
+                Phone Number: 012 915 392/015 300 025
+              </p>
             </div>
-            <CardHeader className="flex flex-row justify-between items-end bg-muted/50">
-              <Image
+            <hr className="mt-3"/>
+            <h2 className="text-center font-bold text-2xl mt-1">Tax Invoice</h2>
+            <CardHeader className="flex flex-row justify-between items-start bg-muted/50">
+              {/* <Image
                 src="/sh.png"
                 className=""
                 priority
                 width="70"
                 height="70"
                 alt="logo"
-              ></Image>
+              ></Image> */}
+              <div className="">
+                <h1 className="text-lg font-bold">Customer:</h1>
+                <p>Customer Name: {invoices[invoiceIndex]?.customers.name}</p>
+                <p>Phone Number: {invoices[invoiceIndex]?.customers.phone}</p>
+                <p>Address: {invoices[invoiceIndex]?.customers.address}</p>
+              </div>
               <div className="grid gap-0.5">
                 <CardTitle className="group flex items-center gap-2 text-lg">
-                  Invoice #SH-
+                  Invoice № #SH-
                   {leadingZeros(invoices[invoiceIndex]?.invoice_number)}
                   <Button
                     size="icon"
@@ -483,6 +536,7 @@ function Invoices({
                   <br />
                   Status: {invoices[invoiceIndex]?.status.toUpperCase()}
                   <br />
+                  Exchange Rate: 4100
                   {invoices[invoiceIndex]?.status == "unpaid" ? (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -525,38 +579,67 @@ function Invoices({
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="p-6 text-sm">
+            <CardContent className="px-6 text-sm">
               <div className="grid gap-3">
-                <div className="font-semibold">Order Details </div>
-                <Table className="table-auto">
-                  <TableHeader>
+                <div className="font-semibold">VATTIN: 12312321312 </div>
+                <Table className="table-auto border border-black">
+                  <TableHeader className="bg-gray-800 text-white">
                     <TableRow className="">
                       <TableHead>Item Name</TableHead>
+                      <TableHead>Description</TableHead>
                       <TableHead>Quantity</TableHead>
                       <TableHead>Unit Price</TableHead>
                       <TableHead>Sub Total</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <TableBody >
                     {invoices[invoiceIndex]?.products?.map(
                       (item: any, index: number) => (
                         <TableRow key={item.name}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell>{item.unit_price}</TableCell>
-                          <TableCell>{formatCurrency(item.total)}</TableCell>
+                          <TableCell className="border border-black">
+                            {item.name}
+                          </TableCell>
+                          <TableCell className="border border-black">
+                            {item.description}
+                          </TableCell>
+                          <TableCell className="border border-black">{item.quantity}</TableCell>
+                          <TableCell className="border border-black">{item.unit_price}</TableCell>
+                          <TableCell className="border border-black">{formatCurrency(item.total)}</TableCell>
                         </TableRow>
                       )
                     )}
+                    <TableRow>
+                      <TableCell colSpan={4} className="border border-black">
+                        SubTotal
+                      </TableCell>
+                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.sub_total)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} className="border border-black">
+                        Shipping Fees
+                      </TableCell>
+                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.shipping_fees)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} className="border border-black">
+                        Tax (10%)
+                      </TableCell>
+                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.tax_charges)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} className="border border-black">
+                        Grand Total
+                      </TableCell>
+                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.grand_total)}</TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
-                <ul className="grid gap-3"></ul>
-                <Separator className="my-2" />
-                <ul className="grid gap-3">
+                
+                {/* <ul className="grid gap-3">
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>
-                      {formatCurrency(invoices[invoiceIndex]?.sub_total)}
+                      
                     </span>
                   </li>
                   <li className="flex items-center justify-between">
@@ -577,15 +660,15 @@ function Invoices({
                       {formatCurrency(invoices[invoiceIndex]?.grand_total)}
                     </span>
                   </li>
-                </ul>
+                </ul> */}
               </div>
-              <Separator className="my-4" />
+              {/* <Separator className="my-4" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-3">
                   <div className="font-semibold">Shipping Information</div>
                   <address className="grid gap-0.5 not-italic text-muted-foreground">
-                    <span>{invoices[invoiceIndex]?.clients.name}</span>
-                    <span>{invoices[invoiceIndex]?.clients.address}</span>
+                    <span>{invoices[invoiceIndex]?.customers.name}</span>
+                    <span>{invoices[invoiceIndex]?.customers.address}</span>
                   </address>
                 </div>
                 <div className="grid auto-rows-max gap-3">
@@ -601,25 +684,27 @@ function Invoices({
                 <dl className="grid gap-3">
                   <div className="flex items-center justify-between">
                     <dt className="text-muted-foreground">Customer</dt>
-                    <dd>{invoices[invoiceIndex]?.clients.name}</dd>
+                    <dd>{invoices[invoiceIndex]?.customers.name}</dd>
                   </div>
                   <div className="flex items-center justify-between">
                     <dt className="text-muted-foreground">Email</dt>
                     <dd>
                       <a href="mailto:">
-                        {invoices[invoiceIndex]?.clients.email}
+                        {invoices[invoiceIndex]?.customers.email}
                       </a>
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
                     <dt className="text-muted-foreground">Phone</dt>
                     <dd>
-                      <a href="tel:">{invoices[invoiceIndex]?.clients.phone}</a>
+                      <a href="tel:">
+                        {invoices[invoiceIndex]?.customers.phone}
+                      </a>
                     </dd>
                   </div>
                 </dl>
               </div>
-              <Separator className="my-4" />
+              <Separator className="my-4" /> */}
               {/* <div className="grid gap-3">
                 <div className="font-semibold">Payment Information</div>
                 <dl className="grid gap-3">
@@ -633,7 +718,7 @@ function Invoices({
                 </dl>
               </div> */}
             </CardContent>
-            <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
+            <CardFooter className="flex flex-row items-center bg-muted/50 px-6 py-3">
               <Pagination className="ml-auto mr-0 w-auto">
                 <PaginationContent>
                   <PaginationItem>

@@ -1,7 +1,10 @@
 
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import * as XLSX from "xlsx";
-import { toast } from "sonner"
+import { toast } from "sonner";
+import { NextResponse } from "next/server";
+
 export function formatCurrency(num:number) {
     let USDollar = new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -10,13 +13,22 @@ export function formatCurrency(num:number) {
 
     return USDollar.format(num)
 }
-export function formatDate( dateString:any,format:string='YYYY-MM-DD' ) { 
+export function formatDate( dateString:any,format:string='YYYY-MM-DD',time_from_now:boolean=false) { 
     if(!dayjs(dateString).isValid()){
         return 'N/A';
     }
-    const formattedDate = dayjs(dateString).format(format)
-
     
+    let formattedDate;
+    if(time_from_now) {
+      dayjs.extend(relativeTime);
+      formattedDate = dayjs(dateString).format('YYYY-MM-DD HH:mm:ss')
+      
+      formattedDate = dayjs(formattedDate).fromNow()
+    
+    }else{
+      formattedDate = dayjs(dateString).format(format)
+    }
+ 
     return formattedDate;
 }
 
@@ -42,7 +54,7 @@ export function exportTable(data?: any, title?: string, worksheetname?: string) 
               const worksheet = XLSX.utils?.json_to_sheet(dataToExport,{header:["Customer","Status","Date","Paid_date","Shipping_fees","Tax_charges","Sub_total","Grand_total"]});
               XLSX.utils.book_append_sheet(workbook, worksheet, worksheetname);
               // Save the workbook as an Excel file
-              XLSX.writeFile(workbook, `${title}.xlsx`);
+              XLSX.writeFile(workbook, `${title+'-export-'+dayjs().format('DD-MM-YYYY')}.xlsx`);
               
               toast.success(`${title} has been export successfully!`)
               
@@ -66,7 +78,7 @@ export function exportTable(data?: any, title?: string, worksheetname?: string) 
               const worksheet = XLSX.utils?.json_to_sheet(dataToExport,{header:["Name","Email","Phone","Address"]});
               XLSX.utils.book_append_sheet(workbook, worksheet, worksheetname);
               // Save the workbook as an Excel file
-              XLSX.writeFile(workbook, `${title}.xlsx`);
+              XLSX.writeFile(workbook, `${title+'-export-'+dayjs().format('DD-MM-YYYY')}.xlsx`);
               toast.success(`${title} has been export successfully!`)
               
             } else {
@@ -102,4 +114,16 @@ export function copyToClipboard(text:any) {
       toast.error('Could not copy clipboard'+ err)
     }
   )
+}
+
+export function success(data = null) {
+  const response = NextResponse.json(
+    { success: true, data },
+    { status: 200 } // 200 is the HTTP status code for success
+  );
+  
+  const result = response.json().then((body:any) => {
+    return body
+  })
+  return result;
 }

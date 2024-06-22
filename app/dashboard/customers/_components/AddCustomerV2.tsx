@@ -57,12 +57,14 @@ export function AddCustomerV2() {
     const phone = values.phone;
     const email = values.email;
     const address = values.address;
-    addCustomer(name, phone, address, email);
+    addCustomer(name, phone, address, email).then((result) => {
+      if(result.success) {
+        toast.success(`Customer has been created successfully!`)
+      }
+    });
     setOpen(false);
-
     form.reset();
 
-    toast.success(`Customer has been created successfully!`)
   }
   return (
     <Sheet open={open} onOpenChange={setOpen}>

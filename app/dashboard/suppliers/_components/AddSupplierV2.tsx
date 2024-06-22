@@ -58,11 +58,15 @@ export function AddSupplierV2() {
     const phone = values.phone;
     const email = values.email;
     const address = values.address;
-    addSupplier(name, email, phone, address);
+    addSupplier(name, email, phone, address).then((result) => {
+      if(result.success) {
+        toast.success(`Supplier has been created successfully!`)
+      }
+    });
     setOpen(false);
 
     form.reset();
-    toast.success(`Supplier has been created successfully!`)
+   
   }
   return (
     <Sheet open={open} onOpenChange={setOpen}>
