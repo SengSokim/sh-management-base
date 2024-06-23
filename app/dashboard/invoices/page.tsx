@@ -91,7 +91,6 @@ function Invoices({
   const [invoiceIndex, setInvoiceIndex] = useState(0);
   const router = useRouter();
   const supabase = createClient();
-
   useEffect(() => {
     getInvoices();
     const subscribeChannel = supabase

@@ -15,7 +15,7 @@ import { exportTable } from "@/lib/helper";
 import { createClient } from "@/utils/supabase/client";
 import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddSupplierV2 } from "./_components/AddSupplierV2";
 import SupplierLoading from "./_components/SupplierLoading";
@@ -35,6 +35,7 @@ function Suppliers({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { suppliers, getSuppliers } = useSuppliers();
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
 
@@ -50,6 +51,7 @@ function Suppliers({
         }
       )
       .subscribe();
+    setLoading(false)
     return () => {
       supabase.removeChannel(subscribeChannel);
     };
@@ -62,7 +64,7 @@ function Suppliers({
 
   const paginatedData = suppliers.slice(start, end);
 
-  return !suppliers.length ? (
+  return !suppliers.length && loading ? (
     <SupplierLoading />
   ) : (
     <div>

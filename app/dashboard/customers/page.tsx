@@ -33,7 +33,8 @@ function Customers({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const { customers, getCustomers } = useCustomers();
+  const { customers, getCustomers } = useCustomers()
+  const [loading, setLoading] = useState(true)
   const router = useRouter();
   const supabase = createClient();
 
@@ -50,7 +51,7 @@ function Customers({
         }
       )
       .subscribe();
-    
+    setLoading(false)
     return () => {
       supabase.removeChannel(subscribeChannel);
     };
@@ -63,7 +64,7 @@ function Customers({
   const end = start + Number(per_page);
 
   const paginatedData = customers.slice(start, end);
-  return !customers.length ? (
+  return !customers.length && loading ? (
     <CustomerLoading/>
   ) :(
     <div className="flex flex-col">

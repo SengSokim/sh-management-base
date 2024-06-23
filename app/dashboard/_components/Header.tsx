@@ -188,7 +188,7 @@ function Header() {
             <DropdownMenuItem>Settings</DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>

@@ -44,6 +44,8 @@ export default function Login({
     } else {
       const result = await response.json();
       router.push(`/login?message=${result.error}`);
+
+      setLoading(false)
     }
   };
 
@@ -110,7 +112,7 @@ export default function Login({
               </CardFooter>
             </Card>
             {searchParams?.message && (
-              <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center text-black">
+              <p className="mt-4 p-4 bg-foreground/10 text-center text-cloud">
                 {searchParams.message}
               </p>
             )}

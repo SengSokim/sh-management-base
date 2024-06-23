@@ -68,23 +68,21 @@ export function CustomerTable({
   };
 
   const editCustomer = async () => {
-    updateCustomer(id, name, phone, address, email).then((result:any) => {
-      if(result.success) {
-        toast.success(`Customer has been updated successfully!`)
+    updateCustomer(id, name, phone, address, email).then((result: any) => {
+      if (result.success) {
+        toast.success(`Customer has been updated successfully!`);
       }
     });
     setOpen(false);
-
   };
 
   const removeClient = async (id: Number) => {
     deleteCustomer(id).then((result) => {
-      if(result.success) {
-        toast.success(`Customer has been deleted successfully!`)
+      if (result.success) {
+        toast.success(`Customer has been deleted successfully!`);
       }
     });
     setOpen(false);
-
   };
 
   return (
@@ -95,7 +93,7 @@ export function CustomerTable({
           Manage your customers and view their contact details. <br />
           Total record(s): {total_record}
         </CardDescription>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="relative ml-auto flex-1 md:grow-0">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -120,7 +118,7 @@ export function CustomerTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {
+            {customers.length ? (
               customers
                 .filter((item: any) => item.name.toLowerCase().includes(search))
                 .map((customer: any, index: number) => (
@@ -256,7 +254,13 @@ export function CustomerTable({
                     </TableCell>
                   </TableRow>
                 ))
-            }
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-lg">
+                  No Record
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
