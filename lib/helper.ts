@@ -39,7 +39,7 @@ export function exportTable(data?: any, title?: string, worksheetname?: string) 
             
                 const dataToExport = data.map((item: any) => (
                 {
-                    Customer: item.clients.name,
+                    Customer: item.customers.name,
                     Status: item.status,
                     Date: formatDate(item.created_at),
                     Paid_date: formatDate(item.paid_at),

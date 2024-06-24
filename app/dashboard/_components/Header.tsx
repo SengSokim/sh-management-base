@@ -75,15 +75,16 @@ function Header() {
             <Button
               variant="ringHover"
               size="icon"
-              className="shrink-0 md:hidden"
+              className="md:hidden"
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle navigation menu</span>
+              
             </Button>
           </SheetTrigger>
           <SheetContent
             side="left"
             className="flex flex-col flex-1 w-64 bg-darknight lg:max-w-screen-lg overflow-y-scroll max-h-screen"
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Image
               src={"/logo.svg"}

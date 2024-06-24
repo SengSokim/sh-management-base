@@ -449,6 +449,46 @@ function Invoices({
                   Print
                 </span>
               </Button>
+              {invoices[invoiceIndex]?.status == "unpaid" ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="expandIcon"
+                          Icon={CircleCheck}
+                          iconPlacement="left"
+                          className="h-8 gap-1"
+                        >
+                          Mark As Paid
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you sure you want to update the status?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will update the
+                            invoice status to PAID.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e: any) =>
+                              updateStatusInvoice(invoices[invoiceIndex]?.id)
+                            }
+                          >
+                            <div className="group text-gold hover:text-gold/60 transition duration-300 ">
+                              Update
+                              <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-gold"></span>
+                            </div>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    ""
+                  )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
@@ -536,45 +576,7 @@ function Invoices({
                   Status: {invoices[invoiceIndex]?.status.toUpperCase()}
                   <br />
                   Exchange Rate: 4100
-                  {invoices[invoiceIndex]?.status == "unpaid" ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="expandIcon"
-                          Icon={CircleCheck}
-                          iconPlacement="left"
-                        >
-                          Mark As Paid
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are you sure you want to update the status?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will update the
-                            invoice status to PAID.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={(e: any) =>
-                              updateStatusInvoice(invoices[invoiceIndex]?.id)
-                            }
-                          >
-                            <div className="group text-gold hover:text-gold/60 transition duration-300 ">
-                              Update
-                              <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-gold"></span>
-                            </div>
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  ) : (
-                    ""
-                  )}
+                  
                 </CardDescription>
               </div>
             </CardHeader>
