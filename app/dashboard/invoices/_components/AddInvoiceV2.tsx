@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { MinusIcon, PlusCircle } from "lucide-react";
+import { CalendarIcon, MinusIcon, PlusCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -56,6 +56,15 @@ import {
 import { sendNotification } from "@/utils/telegram/telegrambot";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
 
 const formSchema = z.object({
   customer_id: z.string({
@@ -68,6 +77,7 @@ const formSchema = z.object({
     required_error: "Please select the status.",
   }),
   send_to_telegram: z.boolean().default(false).optional(),
+  due_date: z.date().optional(),
 });
 interface productItem {
   product_name: string;
@@ -93,7 +103,6 @@ export function AddInvoiceV2() {
   ]);
   const { addInvoice } = useInvoices();
   const [open, setOpen] = useState(false);
-
   const handleChange = (index: any, event: any) => {
     const { name, value } = event.target;
 
@@ -129,6 +138,7 @@ export function AddInvoiceV2() {
     defaultValues: {
       shipping_fees: 0,
       send_to_telegram: false,
+      due_date: new Date()
     },
   });
 
@@ -136,6 +146,7 @@ export function AddInvoiceV2() {
     const customer_id = parseInt(values.customer_id);
     const shipping_fees = values.shipping_fees;
     const status = values.status;
+    const due_date = dayjs(values.due_date).format('YYYY-MM-DD');
     const is_send_to_telegram = values.send_to_telegram;
     if (
       !productItems[0].product_name ||
@@ -146,13 +157,16 @@ export function AddInvoiceV2() {
       toast.info("Please enter atleast one product detail");
     } else {
       const sendToTelegram = async (details: any) => {
-        const productsText = details.products.map((product:any) => 
-          `<b>Product Name</b>: ${product.name}\n`+
-          `<b>Description</b>: ${product.description}\n`+
-          `<b>Quantity</b>: ${product.quantity}\n`+
-          `<b>Unit Price</b>: ${formatCurrency(product.unit_price)}\n`+
-          `<b>Total</b>: ${formatCurrency(product.total)}\n`
-        ).join('\n');
+        const productsText = details.products
+          .map(
+            (product: any) =>
+              `<b>Product Name</b>: ${product.name}\n` +
+              `<b>Description</b>: ${product.description}\n` +
+              `<b>Quantity</b>: ${product.quantity}\n` +
+              `<b>Unit Price</b>: ${formatCurrency(product.unit_price)}\n` +
+              `<b>Total</b>: ${formatCurrency(product.total)}\n`
+          )
+          .join("\n");
         const text =
           `📑<b>Customer Info</b>\n` +
           `<b>Name</b>: ${details.customers.name}\n` +
@@ -160,28 +174,34 @@ export function AddInvoiceV2() {
           `<b>Address</b>: ${details.customers.address}\n` +
           `<b>Email</b>: ${details.customers.email}\n` +
           `🧾<b>Invoice Info</b>\n` +
-          `<b>Invoice Number</b>: #SH-${leadingZeros(details.invoice_number)}\n` +
-          `=============================\n`+
-          `${productsText}`+
-          `=============================\n`+
+          `<b>Invoice Number</b>: #SH-${leadingZeros(
+            details.invoice_number
+          )}\n` +
+          `=============================\n` +
+          `${productsText}` +
+          `=============================\n` +
           `<b>Status</b>: ${details.status}\n` +
           `<b>Shipping Fees</b>: ${formatCurrency(details.shipping_fees)}\n` +
           `<b>Tax Charges</b>: ${formatCurrency(details.tax_charges)}\n` +
           `<b>Sub Total</b>: ${formatCurrency(details.sub_total)}\n` +
-          `=============================\n`+
+          `=============================\n` +
           `<b>Grand Total</b>: ${formatCurrency(details.grand_total)}\n`;
         await sendNotification(text, "html");
       };
-      addInvoice(customer_id, shipping_fees, status, productItems).then(
-        (result) => {
-          if(result.success) {
-            if (is_send_to_telegram) {
-              sendToTelegram(result.data[0]);
-            }
-            toast.success(`Invoice has been created successfully!`);
+      addInvoice(
+        customer_id,
+        shipping_fees,
+        status,
+        due_date,
+        productItems
+      ).then((result) => {
+        if (result.success) {
+          if (is_send_to_telegram) {
+            sendToTelegram(result.data[0]);
           }
+          toast.success(`Invoice has been created successfully!`);
         }
-      );
+      });
 
       setOpen(false);
 
@@ -194,7 +214,6 @@ export function AddInvoiceV2() {
           product_description: "",
         },
       ]);
-
     }
   }
   return (
@@ -254,7 +273,7 @@ export function AddInvoiceV2() {
                   <Table className="w-[800px]">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[20%] sticky left-0 bg-platinum ">
+                        <TableHead className="w-[20%] sticky left-0">
                           Name
                         </TableHead>
                         <TableHead className="w-[20%]">Description</TableHead>
@@ -403,6 +422,44 @@ export function AddInvoiceV2() {
               />
               <FormField
                 control={form.control}
+                name="due_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Due Date</FormLabel>
+                    <Popover modal={true}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="send_to_telegram"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow mt-3 bg-cloud text-darknight">
@@ -414,9 +471,7 @@ export function AddInvoiceV2() {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none ">
-                      <FormLabel>
-                        Send to Telegram
-                      </FormLabel>
+                      <FormLabel>Send to Telegram</FormLabel>
                       <FormDescription>
                         Check to send the invoice to Telegram.
                       </FormDescription>

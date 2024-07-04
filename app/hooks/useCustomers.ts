@@ -29,15 +29,18 @@ export const useCustomers = () => {
         }
     }
     
-    const addCustomer = async (name:String,phone:String,address:String,email:String) => {
+    const addCustomer = async (name:String,type:any, company_name:any,phone:String,address:String,email:String, tin_number:String) => {
        
         const { data, error } = await supabase
         .from('customers')
         .insert([
         {   name: name, 
+            customer_type: type, 
+            company_name: company_name, 
             phone: phone,
             address: address,
-            email: email
+            email: email,
+            tin_number: tin_number || null
         },
         ])
         .select()
@@ -50,15 +53,18 @@ export const useCustomers = () => {
         
     }
             
-    const updateCustomer = async(id:Number,name:String, phone:String,address:String, email:String) => {
+    const updateCustomer = async(id:Number,name:String, type:any, company_name:any, phone:String,address:String, email:String, tin_number:String) => {
     
         const { data, error } = await supabase
         .from('customers')
         .update({ 
             name: name, 
+            customer_type: type, 
+            company_name: company_name, 
             phone: phone,
             address: address,
-            email: email
+            email: email,
+            tin_number: tin_number
         })
         .eq('id', id)
         .select()

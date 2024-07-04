@@ -28,19 +28,24 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import ImportCustomer from "./_components/ImportCustomer";
+
+
 function Customers({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const { customers, getCustomers } = useCustomers()
-  const [loading, setLoading] = useState(true)
+  const { customers, getCustomers } = useCustomers();
+
+  const [loading, setLoading] = useState(true);
+ 
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     getCustomers();
-    
+
     const subscribeChannel = supabase
       .channel("all-customers-changes-follow-up")
       .on(
@@ -51,12 +56,12 @@ function Customers({
         }
       )
       .subscribe();
-    setLoading(false)
+    setLoading(false);
     return () => {
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
-  
+
   const page = searchParams["page"] ?? "1";
   const per_page = searchParams["per_page"] ?? "10";
 
@@ -64,9 +69,10 @@ function Customers({
   const end = start + Number(per_page);
 
   const paginatedData = customers.slice(start, end);
+  
   return !customers.length && loading ? (
-    <CustomerLoading/>
-  ) :(
+    <CustomerLoading />
+  ) : (
     <div className="flex flex-col">
       <div className="flex justify-between items-center my-3">
         <h1 className="text-[32px] font-bold ">Customers</h1>
@@ -77,7 +83,9 @@ function Customers({
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard/customers">Customers</BreadcrumbLink>
+              <BreadcrumbLink href="/dashboard/customers">
+                Customers
+              </BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -90,6 +98,7 @@ function Customers({
                 variant="expandIcon"
                 Icon={ListFilter}
                 iconPlacement="left"
+                title="Filter customer"
               >
                 Filter
               </Button>
@@ -104,18 +113,21 @@ function Customers({
               <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <ImportCustomer />
           <Button
             variant="expandIcon"
             Icon={File}
             iconPlacement="left"
             className=""
-            onClick={() => exportTable(customers, "Customer","CustomerExport")}
+            onClick={() => exportTable(customers, "Customer", "CustomerExport")}
+            title="Export Customers details"
           >
             Export
           </Button>
           <AddCustomerV2 />
         </div>
       </div>
+      
       <Card x-chunk="dashboard-06-chunk-0">
         <CustomerTable
           customers={paginatedData}

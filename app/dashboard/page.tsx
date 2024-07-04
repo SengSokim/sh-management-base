@@ -27,8 +27,9 @@ import {
 import { PaginationControls } from "./_components/PaginationControls";
 import { CalendarCard } from "./_components/CalendarCard";
 import { toast } from "sonner";
-import { useRef } from "react";
-
+import { useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import * as XLSX from "xlsx";
 const data = [
   {
     id: 1,
@@ -182,7 +183,7 @@ export default function Dashboard({
 
   const start = (Number(page) - 1) * Number(per_page);
   const end = start + Number(per_page);
-
+  const [importedData, setImportedData] = useState<unknown>()
   const paginatedData = data.slice(start, end);
   const showToast = () => {
     toast.success("Event has been created.");
@@ -209,6 +210,22 @@ export default function Dashboard({
       }
     }
   };
+  const handleImport = (e:any) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+  
+    reader.onload = (event) => {
+      const workbook = XLSX.read(event.target?.result, { type: 'binary' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+      setImportedData(sheetData)
+    };
+  
+    reader.readAsBinaryString(file);
+  
+  }
   return (
     <div className="">
       <title>Dashboard</title>
@@ -271,6 +288,10 @@ export default function Dashboard({
         <div
           className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3"
         >
+          <Input type="file" onChange={(e) => handleImport(e)}/>
+          <div>
+            {JSON.stringify(importedData, null, 2)}
+          </div>
           <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4" ref={printRef}>
             <CardHeader className="flex flex-row items-center">
               <div className="grid gap-2">
@@ -304,7 +325,7 @@ export default function Dashboard({
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="uppercase">
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>

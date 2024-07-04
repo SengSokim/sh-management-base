@@ -21,7 +21,8 @@ export const useInvoices = () => {
                 name,
                 email,
                 phone,
-                address
+                address,
+                tin_number
             ),
             products (
                 name,
@@ -36,7 +37,8 @@ export const useInvoices = () => {
             sub_total,
             grand_total,
             created_at,
-            paid_at
+            paid_at,
+            due_date
         `)
         .eq('admin_id',user?.id)
         .order('id', { ascending: false })
@@ -61,7 +63,7 @@ export const useInvoices = () => {
         description: string
         invoice_id?: string // Make it optional if not all objects will have this property
       }
-    const addInvoice = async (customer_id:number,shipping_fees:number, status:string,productItems:Array<any>) => {
+    const addInvoice = async (customer_id:number,shipping_fees:number, status:string, due_date:any, productItems:Array<any>) => {
        
         if(status == 'unpaid') {
             now = null
@@ -86,6 +88,7 @@ export const useInvoices = () => {
             p_status: status,
             p_shipping_fees: cost_of_shipping,
             p_paid_at: now,
+            p_due_date: due_date,
             p_tax_charges: tax_charges,
             p_sub_total: sub_total,
             p_grand_total: grand_total,
@@ -127,7 +130,8 @@ export const useInvoices = () => {
                 sub_total,
                 grand_total,
                 created_at,
-                paid_at
+                paid_at,
+                due_date
             `)
             .eq('id', invoiceId)
 

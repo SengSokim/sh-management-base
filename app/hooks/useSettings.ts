@@ -1,3 +1,4 @@
+import { success } from "@/lib/helper"
 import { createClient } from "@/utils/supabase/client"
 import { useState } from "react"
 
@@ -14,36 +15,31 @@ export const useSettings = () => {
         .select('*')
         .eq('admin_id',user?.id)
         .order('id', { ascending: true })
-        if(settings){
-            setSettings(settings)
+        if(settings.length){
+            setSettings(settings[0])
         }
     }
-    const createSetting = async (admin_id:string) => {
-        const { data, error } = await supabase
-        .from('settings')
-        .insert([
-        {   
-            admin_id:admin_id
-        },
-        ])
-        .select()
-    }
-    const updateSetting = async (admin_id:string) => {
-        
+    const updateSettings = async (tin_number:string) => {
+        const {
+            data: { user },
+          } = await supabase.auth.getUser()
         const { data, error } = await supabase
         .from('settings')
         .update([
         {   
-            admin_id:admin_id
+            tin_number:tin_number
         },
         ])
+        .eq('admin_id',user?.id)
         .select()
+
+        return success()
     }
     
 
     return {
         settings,
-        createSetting,
-        updateSetting,
+        getSettings,
+        updateSettings,
     }
 }

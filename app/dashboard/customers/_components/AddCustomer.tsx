@@ -22,7 +22,6 @@ export default function AddCustomer() {
     const phone = formData.get("phone") as string;
     const address = formData.get("address") as string;
 
-    addCustomer(name, phone, address, email);
     setOpen(false);
     
   };

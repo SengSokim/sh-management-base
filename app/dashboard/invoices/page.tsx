@@ -5,7 +5,10 @@ import {
   ChevronRight,
   CircleCheck,
   Copy,
+  CreditCard,
+  Download,
   File,
+  Filter,
   ListFilter,
   MoreVertical,
   Printer,
@@ -82,17 +85,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useSettings } from "@/app/hooks/useSettings";
 function Invoices({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { invoices, getInvoices, updateStatus, deleteInvoice } = useInvoices();
+  const{ settings, getSettings } = useSettings();
+
   const [invoiceIndex, setInvoiceIndex] = useState(0);
   const router = useRouter();
   const supabase = createClient();
   useEffect(() => {
     getInvoices();
+    getSettings();
     const subscribeChannel = supabase
       .channel("all-invoices-changes-follow-up")
       .on(
@@ -108,7 +115,6 @@ function Invoices({
       supabase.removeChannel(subscribeChannel);
     };
   }, [supabase, router]);
-
   const totalWeek = () => {
     const todayObj = new Date();
     const todayDate = todayObj.getDate();
@@ -184,13 +190,15 @@ function Invoices({
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = (invoice_number:any) => {
+  const handlePrint = (invoice_number: any) => {
     const printContents = printRef.current?.innerHTML;
 
     if (printContents) {
       const printWindow = window.open("", "", "height=500,width=800");
       if (printWindow) {
-        printWindow.document.write(`<html><head><title>InvoiceSH-${invoice_number}</title>`);
+        printWindow.document.write(
+          `<html><head><title>InvoiceSH-${invoice_number}</title>`
+        );
         const linkElement = printWindow.document.createElement("link");
         linkElement.rel = "stylesheet";
         linkElement.href =
@@ -248,208 +256,224 @@ function Invoices({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <main className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-        <div className="grid items-start gap-4 md:gap-8 lg:col-span-2">
-          {/* Create invoice, total this week, total this month*/}
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-            <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
-              <CardHeader className="pb-3 ">
-                <CardTitle className="">Your Orders</CardTitle>
 
-                <CardDescription className="max-w-lg leading-relaxed ">
-                  Introducing Our Dynamic Orders Dashboard for Seamless
-                  Management and Insightful Analysis.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <AddInvoiceV2 />
-              </CardFooter>
-            </Card>
-            <Card x-chunk="dashboard-05-chunk-1">
-              <CardHeader className="pb-2">
-                <CardDescription>This Week</CardDescription>
-                <CardTitle className="text-2xl">
-                  {formatCurrency(totalWeek())}
-                </CardTitle>
-              </CardHeader>
-              {/* <CardContent>
+      <div className="min-h-screen">
+        <div className="">
+          <div className="flex flex-col lg:flex-row">
+            {/* Left column */}
+            <div className="w-full lg:w-2/3 space-y-4 mb-4 lg:mb-0 lg:pr-4 ">
+              {/* Header */}
+              <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
+                <CardHeader className="pb-3 ">
+                  <CardTitle className="">Your Orders</CardTitle>-
+                  <CardDescription className="max-w-lg leading-relaxed ">
+                    Introducing Our Dynamic Orders Dashboard for Seamless
+                    Management and Insightful Analysis.
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <AddInvoiceV2 />
+                </CardFooter>
+              </Card>
+
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card x-chunk="dashboard-05-chunk-1">
+                  <CardHeader className="pb-2">
+                    <CardDescription>This Week</CardDescription>
+                    <CardTitle className="text-2xl">
+                      {formatCurrency(totalWeek())}
+                    </CardTitle>
+                  </CardHeader>
+                  {/* <CardContent>
                 <div className="text-xs text-muted-foreground">
                   +25% from last week
                 </div>
               </CardContent> */}
-              <CardFooter>
-                <Progress value={25} aria-label="25% increase" />
-              </CardFooter>
-            </Card>
-            <Card x-chunk="dashboard-05-chunk-2 text-midnight">
-              <CardHeader className="pb-2">
-                <CardDescription>This Month</CardDescription>
-                <CardTitle className="text-2xl">
-                  {formatCurrency(totalMonth())}
-                </CardTitle>
-              </CardHeader>
-              {/* <CardContent>
+                  <CardFooter>
+                    <Progress value={25} aria-label="25% increase" />
+                  </CardFooter>
+                </Card>
+                <Card x-chunk="dashboard-05-chunk-2">
+                  <CardHeader className="pb-2">
+                    <CardDescription>This Month</CardDescription>
+                    <CardTitle className="text-2xl">
+                      {formatCurrency(totalMonth())}
+                    </CardTitle>
+                  </CardHeader>
+                  {/* <CardContent>
                 <div className="text-xs text-muted-foreground">
                   +10% from last month
                 </div>
               </CardContent> */}
-              <CardFooter>
-                <Progress value={12} aria-label="12% increase" />
-              </CardFooter>
-            </Card>
-          </div>
-          <div className="grid gap-4">
-            <div className="ml-auto gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                  <CardFooter>
+                    <Progress value={12} aria-label="12% increase" />
+                  </CardFooter>
+                </Card>
+              </div>
+
+              {/* Orders table */}
+              <div className="ml-auto flex flex-col items-end gap-1 ">
+                <div className="flex gap-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="expandIcon"
+                        Icon={ListFilter}
+                        iconPlacement="left"
+                      >
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked>
+                        Fulfilled
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        Declined
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        Refunded
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     variant="expandIcon"
-                    Icon={ListFilter}
+                    Icon={File}
                     iconPlacement="left"
+                    className="ml-3"
+                    onClick={() =>
+                      exportTable(invoices, "Invoice", "InvoiceExport")
+                    }
                   >
-                    Filter
+                    Export
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuCheckboxItem checked>
-                    Fulfilled
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>Declined</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>Refunded</DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </div>
+              </div>
+              <Card x-chunk="dashboard-05-chunk-3" className="overflow-x-auto">
+                <CardHeader className="px-7">
+                  <CardTitle>Invoices</CardTitle>
+                  <CardDescription>
+                    Recent invoices from your store. <br />
+                    Total record(s): {invoices.length}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table className="">
+                    <TableHeader>
+                      <TableRow className="uppercase">
+                        <TableHead className="w-[2%]">#</TableHead>
+                        <TableHead className="w-[10%]">Customer</TableHead>
 
-              <Button
-                variant="expandIcon"
-                Icon={File}
-                iconPlacement="left"
-                className="ml-3"
-                onClick={() =>
-                  exportTable(invoices, "Invoice", "InvoiceExport")
-                }
-              >
-                Export
-              </Button>
+                        <TableHead className="w-[10%] sm:table-cell">
+                          Status
+                        </TableHead>
+                        
+                        <TableHead className="w-[25%] md:table-cell">
+                          Paid Date
+                        </TableHead>
+                        <TableHead className="w-[25%] md:table-cell">
+                          Due Date
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedData ? (
+                        paginatedData.map((invoice: any, index: any) => (
+                          <TableRow
+                            key={index}
+                            className="hover:bg-anti-flash-white"
+                            onClick={() =>
+                              setInvoiceIndex(
+                                index + (Number(page) - 1) * Number(per_page)
+                              )
+                            }
+                          >
+                            <TableCell>
+                              {index +
+                                (Number(page) - 1) * Number(per_page) +
+                                1}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium">
+                                {invoice.customers?.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground md:inline">
+                                {invoice.customers?.email}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="sm:table-cell">
+                              <Badge
+                                className="text-xs capitalize"
+                                variant="secondary"
+                              >
+                                {invoice.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className=" md:table-cell">
+                              {formatDate(invoice.paid_at, "DD MMM YYYY")}
+                            </TableCell>
+                            <TableCell className=" md:table-cell">
+                              {formatDate(invoice.due_date, "DD MMM YYYY")}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <>
+                          <TableRow>
+                            <TableCell colSpan={5}>
+                              <Skeleton className="h-8" />
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell colSpan={5}>
+                              <Skeleton className="h-8" />
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell colSpan={5}>
+                              <Skeleton className="h-8" />
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+                <PaginationControls
+                  totalData={invoices.length}
+                  hasNext={end < invoices.length}
+                  customPerPage={10}
+                  hasPrev={start > 0}
+                />
+              </Card>
             </div>
 
-            {/* Invoices table */}
-            <Card x-chunk="dashboard-05-chunk-3">
-              <CardHeader className="px-7">
-                <CardTitle>Invoices</CardTitle>
-                <CardDescription>
-                  Recent invoices from your store. <br />
-                  Total record(s): {invoices.length}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table className="">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[10%]">#</TableHead>
-                      <TableHead className="w-[20%]">Customer</TableHead>
+            {/* Right column */}
 
-                      <TableHead className="w-[20%] sm:table-cell">
-                        Status
-                      </TableHead>
-                      <TableHead className="w-[20%] md:table-cell">
-                        Date
-                      </TableHead>
-                      <TableHead className="w-[20%] md:table-cell">
-                        Paid Date
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedData ? (
-                      paginatedData.map((invoice: any, index: any) => (
-                        <TableRow
-                          key={index}
-                          className="hover:bg-anti-flash-white"
-                          onClick={() =>
-                            setInvoiceIndex(
-                              index + (Number(page) - 1) * Number(per_page)
-                            )
-                          }
-                        >
-                          <TableCell>
-                            {index + (Number(page) - 1) * Number(per_page) + 1}
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium">
-                              {invoice.customers?.name}
-                            </div>
-                            <div className=" text-sm text-muted-foreground md:inline">
-                              {invoice.customers?.email}
-                            </div>
-                          </TableCell>
-
-                          <TableCell className=" sm:table-cell">
-                            <Badge
-                              className="text-xs capitalize"
-                              variant="secondary"
-                            >
-                              {invoice.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className=" md:table-cell">
-                            {formatDate(invoice.created_at, "DD MMM YYYY")}
-                          </TableCell>
-                          <TableCell className=" md:table-cell">
-                            {formatDate(invoice.paid_at, "DD MMM YYYY")}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <>
-                        <TableRow>
-                          <TableCell colSpan={5}>
-                            <Skeleton className="h-8" />
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell colSpan={5}>
-                            <Skeleton className="h-8" />
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell colSpan={5}>
-                            <Skeleton className="h-8" />
-                          </TableCell>
-                        </TableRow>
-                      </>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-              <PaginationControls
-                totalData={invoices.length}
-                hasNext={end < invoices.length}
-                customPerPage={10}
-                hasPrev={start > 0}
-              />
-            </Card>
-          </div>
-        </div>
-
-        {/* Invoice Preview */}
-        <div>
-          <Card className="h-[220px]"></Card>
-          <div className="ml-auto flex flex-col items-end gap-1 py-3">
-            <div className="flex gap-3">
-              <Button
-                size="sm"
-                variant="gooeyLeft"
-                className="h-8 gap-1"
-                onClick={() => handlePrint(leadingZeros(invoices[invoiceIndex]?.invoice_number))}
-              >
-                <Printer className="h-3.5 w-3.5" />
-                <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                  Print
-                </span>
-              </Button>
-              {invoices[invoiceIndex]?.status == "unpaid" ? (
+            <div className="w-full lg:w-1/3 lg:min-w-[470px] ">
+              <Card className="h-[350px]"></Card>
+              <div className="ml-auto flex flex-col items-end gap-1 py-3">
+                <div className="flex gap-3">
+                  <Button
+                    size="sm"
+                    variant="gooeyLeft"
+                    className="h-8 gap-1"
+                    onClick={() =>
+                      handlePrint(
+                        leadingZeros(invoices[invoiceIndex]?.invoice_number)
+                      )
+                    }
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
+                      Print
+                    </span>
+                  </Button>
+                  {invoices[invoiceIndex]?.status == "unpaid" ? (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -489,50 +513,54 @@ function Invoices({
                   ) : (
                     ""
                   )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="icon" variant="gooeyLeft" className="h-8 w-8">
-                    <MoreVertical className="h-3.5 w-3.5" />
-                    <span className="sr-only">More</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={(e: any) =>
-                      removeInvoice(invoices[invoiceIndex]?.id)
-                    }
-                    className="hover:bg-zinc-300 text-red-400"
-                  >
-                    Trash{" "}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          <Card
-            className="overflow-hidden mt-3"
-            x-chunk="dashboard-05-chunk-4"
-            ref={printRef}
-          >
-            <div className="text-center mx-3">
-              <h1 className="font-bold text-3xl mt-1">
-                Senghour Printing
-              </h1>
-              <p className="mt-3 text-sm">VATTIN Number: 123123123123213</p>
-              <p className="mt-3 text-sm">
-                No.38A, Sangkat Beoung Tum Pun, Khan Mean chey, Phnom Penh
-                (Infront of Khmer Soviet Friendship Hospital)
-              </p>
-              <p className="mt-3 text-sm">
-                Phone Number: 012 915 392/015 300 025
-              </p>
-            </div>
-            <hr className="mt-3"/>
-            <h2 className="text-center font-bold text-2xl mt-1">Tax Invoice</h2>
-            <CardHeader className="flex flex-row justify-between items-start bg-muted/50">
-              {/* <Image
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="gooeyLeft"
+                        className="h-8 w-8"
+                      >
+                        <MoreVertical className="h-3.5 w-3.5" />
+                        <span className="sr-only">More</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={(e: any) =>
+                          removeInvoice(invoices[invoiceIndex]?.id)
+                        }
+                        className="hover:bg-zinc-300 text-red-400"
+                      >
+                        Trash{" "}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              <Card
+                className="overflow-hidden mt-3"
+                x-chunk="dashboard-05-chunk-4"
+                ref={printRef}
+              >
+                <div className="text-center mx-3">
+                  <h1 className="font-bold text-3xl mt-1">Senghour Printing</h1>
+                  <p className="mt-3 text-sm">VATTIN Number: {settings.tin_number}</p>
+                  <p className="mt-3 text-sm">
+                    No.38A, Sangkat Beoung Tum Pun, Khan Mean chey, Phnom Penh
+                    (Infront of Khmer Soviet Friendship Hospital)
+                  </p>
+                  <p className="mt-3 text-sm">
+                    Phone Number: 012 915 392/015 300 025
+                  </p>
+                </div>
+                <hr className="mt-3" />
+                <h2 className="text-center font-bold text-2xl mt-1">
+                  Tax Invoice
+                </h2>
+                <CardHeader className="flex flex-row justify-between items-start bg-muted/50">
+                  {/* <Image
                 src="/sh.png"
                 className=""
                 priority
@@ -540,17 +568,21 @@ function Invoices({
                 height="70"
                 alt="logo"
               ></Image> */}
-              <div className="">
-                <h1 className="text-lg font-bold">Customer:</h1>
-                <p>Customer Name: {invoices[invoiceIndex]?.customers.name}</p>
-                <p>Phone Number: {invoices[invoiceIndex]?.customers.phone}</p>
-                <p>Address: {invoices[invoiceIndex]?.customers.address}</p>
-              </div>
-              <div className="grid gap-0.5">
-                <CardTitle className="group flex items-center gap-2 text-lg">
-                  Invoice № #SH-
-                  {leadingZeros(invoices[invoiceIndex]?.invoice_number)}
-                  <Button
+                  <div className="">
+                    <h1 className="text-lg font-bold">Customer:</h1>
+                    <p>
+                      Customer Name: {invoices[invoiceIndex]?.customers.name}
+                    </p>
+                    <p>
+                      Phone Number: {invoices[invoiceIndex]?.customers.phone}
+                    </p>
+                    <p>Address: {invoices[invoiceIndex]?.customers.address}</p>
+                  </div>
+                  <div className="grid gap-0.5">
+                    <CardTitle className="group flex items-center gap-2 text-lg">
+                      Invoice № #SH-
+                      {leadingZeros(invoices[invoiceIndex]?.invoice_number)}
+                      {/* <Button
                     size="icon"
                     variant="ringHover"
                     className="h-6 w-6"
@@ -564,79 +596,114 @@ function Invoices({
                   >
                     <Copy className="h-3 w-3" />
                     <span className="sr-only">Copy Invoice ID</span>
-                  </Button>
-                </CardTitle>
-                <CardDescription>
-                  Date:{" "}
-                  {formatDate(
-                    invoices[invoiceIndex]?.created_at || "",
-                    "DD MMM YYYY"
-                  )}{" "}
-                  <br />
-                  Status: {invoices[invoiceIndex]?.status.toUpperCase()}
-                  <br />
-                  Exchange Rate: 4100
-                  
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="px-6 text-sm">
-              <div className="grid gap-3">
-                <div className="font-semibold">VATTIN: 12312321312 </div>
-                <Table className="table-auto border border-black">
-                  <TableHeader className="bg-gray-800 text-white">
-                    <TableRow className="">
-                      <TableHead>Item Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Unit Price</TableHead>
-                      <TableHead>Sub Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody >
-                    {invoices[invoiceIndex]?.products?.map(
-                      (item: any, index: number) => (
-                        <TableRow key={item.name}>
-                          <TableCell className="border border-black">
-                            {item.name}
-                          </TableCell>
-                          <TableCell className="border border-black">
-                            {item.description}
-                          </TableCell>
-                          <TableCell className="border border-black">{item.quantity}</TableCell>
-                          <TableCell className="border border-black">{item.unit_price}</TableCell>
-                          <TableCell className="border border-black">{formatCurrency(item.total)}</TableCell>
+                  </Button> */}
+                    </CardTitle>
+                    <CardDescription>
+                      Date:{" "}
+                      {formatDate(
+                        invoices[invoiceIndex]?.created_at || "",
+                        "DD MMM YYYY"
+                      )}{" "}
+                      <br />
+                      Status: {invoices[invoiceIndex]?.status.toUpperCase()}
+                      <br />
+                      Due Date: {invoices[invoiceIndex]?.due_date || 'N/A'}
+                      <br />
+                      Exchange Rate: {settings.exchange_rate}	៛
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-6 text-sm">
+                  <div className="grid gap-3">
+                    <div className="font-semibold">
+                      VATTIN: {invoices[invoiceIndex]?.customers.tin_number}{" "}
+                    </div>
+                    <Table className="table-auto border border-black">
+                      <TableHeader className="bg-gray-800 text-white">
+                        <TableRow className="">
+                          <TableHead>Item Name</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Quantity</TableHead>
+                          <TableHead>Unit Price</TableHead>
+                          <TableHead>Sub Total</TableHead>
                         </TableRow>
-                      )
-                    )}
-                    <TableRow>
-                      <TableCell colSpan={4} className="border border-black">
-                        SubTotal
-                      </TableCell>
-                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.sub_total)}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4} className="border border-black">
-                        Shipping Fees
-                      </TableCell>
-                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.shipping_fees)}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4} className="border border-black">
-                        Tax (10%)
-                      </TableCell>
-                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.tax_charges)}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4} className="border border-black">
-                        Grand Total
-                      </TableCell>
-                      <TableCell className="border border-black">{formatCurrency(invoices[invoiceIndex]?.grand_total)}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-                
-                {/* <ul className="grid gap-3">
+                      </TableHeader>
+                      <TableBody>
+                        {invoices[invoiceIndex]?.products?.map(
+                          (item: any, index: number) => (
+                            <TableRow key={item.name}>
+                              <TableCell className="border border-black">
+                                {item.name}
+                              </TableCell>
+                              <TableCell className="border border-black">
+                                {item.description}
+                              </TableCell>
+                              <TableCell className="border border-black">
+                                {item.quantity}
+                              </TableCell>
+                              <TableCell className="border border-black">
+                                {item.unit_price}
+                              </TableCell>
+                              <TableCell className="border border-black">
+                                {formatCurrency(item.total)}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="border border-black"
+                          >
+                            Sub Total
+                          </TableCell>
+                          <TableCell className="border border-black">
+                            {formatCurrency(invoices[invoiceIndex]?.sub_total)}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="border border-black"
+                          >
+                            Shipping Fees
+                          </TableCell>
+                          <TableCell className="border border-black">
+                            {formatCurrency(
+                              invoices[invoiceIndex]?.shipping_fees
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="border border-black"
+                          >
+                            Tax (10%)
+                          </TableCell>
+                          <TableCell className="border border-black">
+                            {formatCurrency(
+                              invoices[invoiceIndex]?.tax_charges
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="border border-black"
+                          >
+                            Grand Total
+                          </TableCell>
+                          <TableCell className="border border-black">
+                            {formatCurrency(
+                              invoices[invoiceIndex]?.grand_total
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+
+                    {/* <ul className="grid gap-3">
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>
@@ -662,8 +729,8 @@ function Invoices({
                     </span>
                   </li>
                 </ul> */}
-              </div>
-              {/* <Separator className="my-4" />
+                  </div>
+                  {/* <Separator className="my-4" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-3">
                   <div className="font-semibold">Shipping Information</div>
@@ -706,7 +773,7 @@ function Invoices({
                 </dl>
               </div>
               <Separator className="my-4" /> */}
-              {/* <div className="grid gap-3">
+                  {/* <div className="grid gap-3">
                 <div className="font-semibold">Payment Information</div>
                 <dl className="grid gap-3">
                   <div className="flex items-center justify-between">
@@ -718,40 +785,42 @@ function Invoices({
                   </div>
                 </dl>
               </div> */}
-            </CardContent>
-            <CardFooter className="flex flex-row items-center bg-muted/50 px-6 py-3">
-              <Pagination className="ml-auto mr-0 w-auto">
-                <PaginationContent>
-                  <PaginationItem>
-                    <Button
-                      size="icon"
-                      variant="ringHover"
-                      className="h-6 w-6"
-                      onClick={(e) => setInvoiceIndex(invoiceIndex - 1)}
-                      disabled={!invoiceIndex}
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                      <span className="sr-only">Previous Order</span>
-                    </Button>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <Button
-                      size="icon"
-                      variant="ringHover"
-                      className="h-6 w-6"
-                      onClick={(e) => setInvoiceIndex(invoiceIndex + 1)}
-                      disabled={invoiceIndex == invoices.length - 1}
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                      <span className="sr-only">Next Order</span>
-                    </Button>
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </CardFooter>
-          </Card>
+                </CardContent>
+                <CardFooter className="flex flex-row items-center bg-muted/50 px-6 py-3">
+                  <Pagination className="ml-auto mr-0 w-auto">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <Button
+                          size="icon"
+                          variant="ringHover"
+                          className="h-6 w-6"
+                          onClick={(e) => setInvoiceIndex(invoiceIndex - 1)}
+                          disabled={!invoiceIndex}
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                          <span className="sr-only">Previous Order</span>
+                        </Button>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <Button
+                          size="icon"
+                          variant="ringHover"
+                          className="h-6 w-6"
+                          onClick={(e) => setInvoiceIndex(invoiceIndex + 1)}
+                          disabled={invoiceIndex == invoices.length - 1}
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                          <span className="sr-only">Next Order</span>
+                        </Button>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

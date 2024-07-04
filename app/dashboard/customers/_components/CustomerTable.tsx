@@ -38,6 +38,15 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function CustomerTable({
   customers,
@@ -55,20 +64,35 @@ export function CustomerTable({
   const [search, setSearch] = useState("");
   const [id, setId] = useState<any>();
   const [name, setName] = useState("");
+  const [type, setType] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [tin_number, setTinNumber] = useState("");
 
   const showDetail = async (details: any) => {
     setId(details.id);
     setName(details.name);
+    setType(details.customer_type);
+    setCompanyName(details.company_name);
     setEmail(details.email);
     setPhone(details.phone);
     setAddress(details.address);
+    setTinNumber(details.tin_number);
   };
 
   const editCustomer = async () => {
-    updateCustomer(id, name, phone, address, email).then((result: any) => {
+    updateCustomer(
+      id,
+      name,
+      type,
+      companyName,
+      phone,
+      address,
+      email,
+      tin_number
+    ).then((result: any) => {
       if (result.success) {
         toast.success(`Customer has been updated successfully!`);
       }
@@ -109,12 +133,15 @@ export function CustomerTable({
       <CardContent>
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="uppercase">
               <TableHead className="w-[100px]">#</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Company Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Work Phone</TableHead>
               <TableHead className="text-right">Address</TableHead>
+              <TableHead className="text-right"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -127,6 +154,8 @@ export function CustomerTable({
                       {index + (Number(page) - 1) * Number(per_page) + 1}
                     </TableCell>
                     <TableCell>{customer.name}</TableCell>
+                    <TableCell>{customer.customer_type || "N/A"}</TableCell>
+                    <TableCell>{customer.company_name || "N/A"}</TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell className="text-right">
@@ -180,15 +209,67 @@ export function CustomerTable({
                                       onChange={(e) => setName(e.target.value)}
                                     />
                                   </div>
+                                  <div className="grid grid-cols-4 items-center gap-4 ">
+                                    <Label
+                                      htmlFor="customer_type"
+                                      className="text-right"
+                                    >
+                                      Customer Type
+                                    </Label>
+                                    <div className="col-span-3">
+                                    <Select
+                                      onValueChange={setType}
+                                      defaultValue={type}
+                                    >
+                                      <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Type" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white w-full">
+                                        <SelectGroup>
+                                          <SelectLabel>Type</SelectLabel>
+                                          <SelectItem
+                                            value="individual"
+                                            className="capitalize"
+                                          >
+                                            Individual
+                                          </SelectItem>
+                                          <SelectItem
+                                            value="business"
+                                            className="capitalize"
+                                          >
+                                            Business
+                                          </SelectItem>
+                                        </SelectGroup>
+                                      </SelectContent>
+                                    </Select>
+                                    </div>
+                                  </div>
                                   <div className="grid grid-cols-4 items-center gap-4">
                                     <Label
-                                      htmlFor="username"
+                                      htmlFor="company_name"
+                                      className="text-right"
+                                    >
+                                      Company Name
+                                    </Label>
+                                    <Input
+                                      id="company_name"
+                                      name="company_name"
+                                      className="col-span-3"
+                                      value={companyName}
+                                      onChange={(e) =>
+                                        setCompanyName(e.target.value)
+                                      }
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label
+                                      htmlFor="phone"
                                       className="text-right"
                                     >
                                       Phone
                                     </Label>
                                     <Input
-                                      id="username"
+                                      id="phone"
                                       type="number"
                                       name="phone"
                                       className="col-span-3"
@@ -198,13 +279,13 @@ export function CustomerTable({
                                   </div>
                                   <div className="grid grid-cols-4 items-center gap-4">
                                     <Label
-                                      htmlFor="username"
+                                      htmlFor="email"
                                       className="text-right"
                                     >
                                       Email
                                     </Label>
                                     <Input
-                                      id="username"
+                                      id="email"
                                       type="email"
                                       name="email"
                                       className="col-span-3"
@@ -214,18 +295,35 @@ export function CustomerTable({
                                   </div>
                                   <div className="grid grid-cols-4 items-center gap-4">
                                     <Label
-                                      htmlFor="username"
+                                      htmlFor="address"
                                       className="text-right"
                                     >
                                       Address
                                     </Label>
                                     <Input
-                                      id="username"
+                                      id="address"
                                       name="address"
                                       className="col-span-3"
                                       value={address}
                                       onChange={(e) =>
                                         setAddress(e.target.value)
+                                      }
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label
+                                      htmlFor="tin_number"
+                                      className="text-right"
+                                    >
+                                      Tin Number
+                                    </Label>
+                                    <Input
+                                      id="tin_number"
+                                      name="tin_number"
+                                      className="col-span-3"
+                                      value={tin_number}
+                                      onChange={(e) =>
+                                        setTinNumber(e.target.value)
                                       }
                                     />
                                   </div>
@@ -256,7 +354,7 @@ export function CustomerTable({
                 ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-lg">
+                <TableCell colSpan={7} className="text-center text-lg">
                   No Record
                 </TableCell>
               </TableRow>

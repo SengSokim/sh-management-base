@@ -111,12 +111,13 @@ export function SupplierTable({
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="uppercase">
                     <TableHead className="w-[100px]">#</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
+                    <TableHead>Work Phone</TableHead>
                     <TableHead className="text-right">Address</TableHead>
+                    <TableHead className="text-right"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

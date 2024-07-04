@@ -76,10 +76,11 @@ function Sidebar() {
                     Your notifications will pop up here.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-1 p-1.5 h-[350px] overflow-auto">
+                <CardContent className="grid gap-1 p-1.5 h-[350px] overflow-auto no-scrollbar">
                   {notifications.map((item: any) => (
                     <div key={item.id} className="flex items-center space-x-4 rounded-md p-2 hover:bg-zinc-400/80 hover:text-text-darknight transition-all ">
-                      <span className="flex h-4 w-4 rounded-full bg-sky-500" />
+                      
+                      <span className={`flex h-4 w-4 rounded-full bg-sky-500 ${item.is_read ? 'hidden':''}`} />
                       <div className="flex justify-between items-center">
                         <div className="space-y-1">
                           <p className="text-sm font-medium leading-none">
@@ -172,25 +173,7 @@ function Sidebar() {
             </Link>
           </nav>
         </div>
-        {/* <div className="mt-auto p-4">
-            <Card x-chunk="dashboard-02-chunk-0">
-              <CardHeader className="p-2 pt-0 md:p-4">
-                <CardTitle>Account</CardTitle>
-                <CardDescription>
-                  {user?.email}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-                <form action={signOut}>
-                    <Button size="sm" className="w-full text-red-500 hover:bg-zinc-300">
-                      Logout
-                    </Button>
-                    
-                </form>
-                
-              </CardContent>
-            </Card>
-          </div> */}
+        
       </div>
     </div>
   );
