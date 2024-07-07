@@ -1,5 +1,4 @@
 import { MoreHorizontal, Search } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   CardContent,
@@ -7,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -17,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +33,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   Select,
@@ -47,6 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function CustomerTable({
   customers,
@@ -153,7 +150,19 @@ export function CustomerTable({
                     <TableCell className="font-medium">
                       {index + (Number(page) - 1) * Number(per_page) + 1}
                     </TableCell>
-                    <TableCell>{customer.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar>
+                          <AvatarImage
+                            src="/user-icon.svg"
+                            alt="@shadcn"
+                            className="bg-gradient-to-b from-onyx to-french-gray"
+                          />
+                          <AvatarFallback>User</AvatarFallback>
+                        </Avatar>
+                        {customer.name}
+                      </div>
+                    </TableCell>
                     <TableCell>{customer.customer_type || "N/A"}</TableCell>
                     <TableCell>{customer.company_name || "N/A"}</TableCell>
                     <TableCell>{customer.email}</TableCell>
@@ -217,31 +226,31 @@ export function CustomerTable({
                                       Customer Type
                                     </Label>
                                     <div className="col-span-3">
-                                    <Select
-                                      onValueChange={setType}
-                                      defaultValue={type}
-                                    >
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Type" />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-white w-full">
-                                        <SelectGroup>
-                                          <SelectLabel>Type</SelectLabel>
-                                          <SelectItem
-                                            value="individual"
-                                            className="capitalize"
-                                          >
-                                            Individual
-                                          </SelectItem>
-                                          <SelectItem
-                                            value="business"
-                                            className="capitalize"
-                                          >
-                                            Business
-                                          </SelectItem>
-                                        </SelectGroup>
-                                      </SelectContent>
-                                    </Select>
+                                      <Select
+                                        onValueChange={setType}
+                                        defaultValue={type}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Type" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white w-full">
+                                          <SelectGroup>
+                                            <SelectLabel>Type</SelectLabel>
+                                            <SelectItem
+                                              value="individual"
+                                              className="capitalize"
+                                            >
+                                              Individual
+                                            </SelectItem>
+                                            <SelectItem
+                                              value="business"
+                                              className="capitalize"
+                                            >
+                                              Business
+                                            </SelectItem>
+                                          </SelectGroup>
+                                        </SelectContent>
+                                      </Select>
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-4 items-center gap-4">

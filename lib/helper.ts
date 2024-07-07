@@ -126,19 +126,42 @@ export function exportTable(data?: ExportData, title?: string, worksheetName?: s
   }
 }
  
-export function importTable(e:any) {
-  const file = e.target.files[0];
-  const reader = new FileReader();
+export function importTable(e: React.ChangeEvent<HTMLInputElement>): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      reject(new Error('No file selected'));
+      return;
+    }
 
-  reader.onload = (event) => {
-    const workbook = XLSX.read(event.target?.result, { type: 'binary' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const sheetData = XLSX.utils.sheet_to_json(sheet);
-  };
+    const reader = new FileReader();
 
-  reader.readAsBinaryString(file);
+    reader.onload = (event: ProgressEvent<FileReader>) => {
+      try {
+        const binaryStr = event.target?.result as string;
+        const workbook = XLSX.read(binaryStr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+        // Convert keys to lowercase
+        const lowercaseData = sheetData.map((row:any) => 
+          Object.keys(row).reduce((acc, key) => {
+            acc[key.toLowerCase()] = row[key];
+            return acc;
+          }, {} as Record<string, any>)
+        );
+        resolve(lowercaseData);
+      } catch (error) {
+        reject(error);
+      }
+    };
 
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsBinaryString(file);
+  });
 }
 
 export function capitalize(str:any) {

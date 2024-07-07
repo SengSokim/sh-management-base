@@ -1,368 +1,287 @@
 "use client";
+import React, { useState, useMemo, useEffect } from "react";
 import {
-  Activity,
-  ArrowUpRight,
-  CreditCard,
-  DollarSign,
-  Printer,
-  Users,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import dayjs from "dayjs";
+import { useInvoices } from "../hooks/useInvoices";
+import { formatCurrency } from "@/lib/helper";
+import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { PaginationControls } from "./_components/PaginationControls";
-import { CalendarCard } from "./_components/CalendarCard";
-import { toast } from "sonner";
-import { useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import * as XLSX from "xlsx";
-const data = [
-  {
-    id: 1,
-    first_name: "Jacquenetta",
-    email: "jaston0@flickr.com",
-    phone: "590-122-8197",
-    address: "90 John Wall Pass",
-  },
-  {
-    id: 2,
-    first_name: "Myrtia",
-    email: "mcanedo1@twitter.com",
-    phone: "401-138-0223",
-    address: "81 Armistice Avenue",
-  },
-  {
-    id: 3,
-    first_name: "Lanette",
-    email: "lbuzin2@purevolume.com",
-    phone: "871-517-4762",
-    address: "3642 Alpine Hill",
-  },
-  {
-    id: 4,
-    first_name: "Mandi",
-    email: "mclayton3@home.pl",
-    phone: "180-978-2739",
-    address: "2 Brentwood Place",
-  },
-  {
-    id: 5,
-    first_name: "Aveline",
-    email: "aaltamirano4@ihg.com",
-    phone: "388-395-5028",
-    address: "6829 Grim Point",
-  },
-  {
-    id: 6,
-    first_name: "Jemmy",
-    email: "jbarenski5@amazon.co.jp",
-    phone: "731-738-1274",
-    address: "6 Quincy Terrace",
-  },
-  {
-    id: 7,
-    first_name: "Merwin",
-    email: "mdunklee6@wisc.edu",
-    phone: "585-158-7356",
-    address: "6 American Ash Lane",
-  },
-  {
-    id: 8,
-    first_name: "Janet",
-    email: "jjerred7@vk.com",
-    phone: "859-778-5634",
-    address: "09 4th Avenue",
-  },
-  {
-    id: 9,
-    first_name: "Torrance",
-    email: "tmoden8@nsw.gov.au",
-    phone: "198-697-0676",
-    address: "8235 Fairview Street",
-  },
-  {
-    id: 10,
-    first_name: "Aryn",
-    email: "adyers9@phpbb.com",
-    phone: "283-144-9033",
-    address: "5 Bonner Crossing",
-  },
-  {
-    id: 11,
-    first_name: "Tess",
-    email: "tmoraleea@spiegel.de",
-    phone: "219-565-1770",
-    address: "700 Red Cloud Lane",
-  },
-  {
-    id: 12,
-    first_name: "Janeczka",
-    email: "jtomalab@ted.com",
-    phone: "443-418-1381",
-    address: "0 Acker Circle",
-  },
-  {
-    id: 13,
-    first_name: "Morty",
-    email: "mmoarc@nymag.com",
-    phone: "399-631-4804",
-    address: "6 Green Ridge Way",
-  },
-  {
-    id: 14,
-    first_name: "Gus",
-    email: "gshawyersd@github.io",
-    phone: "491-349-7984",
-    address: "8983 Katie Park",
-  },
-  {
-    id: 15,
-    first_name: "Teodor",
-    email: "tedwickere@ibm.com",
-    phone: "499-692-8518",
-    address: "898 Algoma Place",
-  },
-  {
-    id: 16,
-    first_name: "Pauli",
-    email: "pslopierf@usnews.com",
-    phone: "467-886-5987",
-    address: "0 Westridge Drive",
-  },
-  {
-    id: 17,
-    first_name: "Jonah",
-    email: "jfrancescozzig@umich.edu",
-    phone: "746-550-2593",
-    address: "47 Village Green Hill",
-  },
-  {
-    id: 18,
-    first_name: "Vicky",
-    email: "vmatevosianh@auda.org.au",
-    phone: "305-119-2114",
-    address: "9128 Petterle Junction",
-  },
-  {
-    id: 19,
-    first_name: "Tulley",
-    email: "theinritzi@earthlink.net",
-    phone: "175-560-8558",
-    address: "13141 Farwell Trail",
-  },
-  {
-    id: 20,
-    first_name: "Helen",
-    email: "hhryncewiczj@deliciousdays.com",
-    phone: "116-399-4463",
-    address: "5 Forster Junction",
-  },
-];
-
-export default function Dashboard({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const page = searchParams["page"] ?? "1";
-  const per_page = searchParams["per_page"] ?? "5";
-
-  const start = (Number(page) - 1) * Number(per_page);
-  const end = start + Number(per_page);
-  const [importedData, setImportedData] = useState<unknown>()
-  const paginatedData = data.slice(start, end);
-  const showToast = () => {
-    toast.success("Event has been created.");
+interface RawInvoiceData {
+  customers: {
+    name: string;
   };
-  const printRef = useRef<HTMLDivElement>(null);
+  status: "paid" | "unpaid";
+  created_at: string;
+  paid_at: string | null;
+  shipping_fees: number;
+  tax_charges: number;
+  sub_total: number;
+  grand_total: number;
+}
 
-  const handlePrint = () => {
-    const printContents = printRef.current?.innerHTML;
-    if (printContents) {
-      const printWindow = window.open("", "", "height=500,width=800");
-      if (printWindow) {
-        printWindow.document.write("<html><head><title>Print</title>");
-        const linkElement = printWindow.document.createElement('link');
-        linkElement.rel = 'stylesheet';
-        linkElement.href = 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
-        linkElement.onload = () => {
-          printWindow.document.write('</head><body>');
-          printWindow.document.write(printContents);
-          printWindow.document.write('</body></html>');
-          printWindow.document.close();
-          printWindow.print();
+interface InvoiceData {
+  Customer: string;
+  Status: "paid" | "unpaid";
+  Date: string;
+  Paid_date: string;
+  Shipping_fees: number;
+  Tax_charges: number;
+  Sub_total: number;
+  Grand_total: number;
+}
+
+interface MonthlyChartData {
+  date: string;
+  "Grand Total": number;
+  "Sub Total": number;
+  "Tax Charges": number;
+  "Shipping Fees": number;
+  "Invoice Count": number;
+}
+
+const InvoiceAnalysisDashboard: React.FC = () => {
+  const [selectedCustomer, setSelectedCustomer] = useState<string>("All");
+  const { invoices, getInvoices } = useInvoices();
+
+  useEffect(() => {
+    getInvoices();
+  }, [getInvoices]);
+  const data: InvoiceData[] = useMemo(() => {
+    return (
+      invoices?.map((item: RawInvoiceData) => ({
+        Customer: item.customers.name,
+        Status: item.status,
+        Date: dayjs(item.created_at).format("YYYY-MM-DD"),
+        Paid_date: item.paid_at
+          ? dayjs(item.paid_at).format("YYYY-MM-DD")
+          : "N/A",
+        Shipping_fees: item.shipping_fees,
+        Tax_charges: item.tax_charges,
+        Sub_total: item.sub_total,
+        Grand_total: item.grand_total,
+      })) || []
+    );
+  }, [invoices]);
+
+  const customers = useMemo(() => {
+    const uniqueCustomers = Array.from(
+      new Set(data.map((item) => item.Customer))
+    );
+    return ["All", ...uniqueCustomers];
+  }, [data]);
+
+  const filteredData = useMemo(() => {
+    return selectedCustomer === "All"
+      ? data
+      : data.filter((item) => item.Customer === selectedCustomer);
+  }, [selectedCustomer, data]);
+
+  const totalRevenue = useMemo(
+    () =>
+      filteredData.reduce((sum, item) => sum + item.Grand_total, 0).toFixed(2),
+    [filteredData]
+  );
+  const averageOrderValue = useMemo(
+    () =>
+      filteredData.length > 0
+        ? (parseFloat(totalRevenue) / filteredData.length).toFixed(2)
+        : "0.00",
+    [filteredData, totalRevenue]
+  );
+  const paidInvoices = useMemo(
+    () => filteredData.filter((item) => item.Status === "paid").length,
+    [filteredData]
+  );
+  const unpaidInvoices = useMemo(
+    () => filteredData.filter((item) => item.Status === "unpaid").length,
+    [filteredData]
+  );
+
+  const chartData: MonthlyChartData[] = useMemo(() => {
+    const monthlyData: { [key: string]: MonthlyChartData } = {};
+
+    filteredData.forEach((item) => {
+      const monthYear = dayjs(item.Date).format("YYYY-MM");
+      if (!monthlyData[monthYear]) {
+        monthlyData[monthYear] = {
+          date: monthYear,
+          "Grand Total": 0,
+          "Sub Total": 0,
+          "Tax Charges": 0,
+          "Shipping Fees": 0,
+          "Invoice Count": 0,
         };
-        printWindow.document.head.appendChild(linkElement);
       }
-    }
-  };
-  const handleImport = (e:any) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-  
-    reader.onload = (event) => {
-      const workbook = XLSX.read(event.target?.result, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(sheet);
+      monthlyData[monthYear]["Grand Total"] += item.Grand_total;
+      monthlyData[monthYear]["Sub Total"] += item.Sub_total;
+      monthlyData[monthYear]["Tax Charges"] += item.Tax_charges;
+      monthlyData[monthYear]["Shipping Fees"] += item.Shipping_fees;
+      monthlyData[monthYear]["Invoice Count"]++;
+    });
+    // Round all numeric values to 2 decimal places
+    Object.values(monthlyData).forEach((data) => {
+      data["Grand Total"] = Number(data["Grand Total"].toFixed(2));
+      data["Sub Total"] = Number(data["Sub Total"].toFixed(2));
+      data["Tax Charges"] = Number(data["Tax Charges"].toFixed(2));
+      data["Shipping Fees"] = Number(data["Shipping Fees"].toFixed(2));
+    });
+    return Object.values(monthlyData).sort((a, b) =>
+      a.date.localeCompare(b.date)
+    );
+  }, [filteredData]);
 
-      setImportedData(sheetData)
-    };
-  
-    reader.readAsBinaryString(file);
-  
+  if (!invoices) {
+    return <div>Loading...</div>;
   }
+
   return (
-    <div className="">
-      <title>Dashboard</title>
-      <main className="flex flex-1 flex-col gap-4 px-4 md:gap-8 md:px-8">
-        <h1 className="text-[32px] font-bold">Home</h1>
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-          <Card x-chunk="dashboard-01-chunk-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$45,231.89</div>
-              <p className="text-xs text-muted-foreground">
-                +20.1% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Subscriptions
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">---</div>
-              <p className="text-xs text-muted-foreground">
-                --- from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sales</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">---</div>
-              <p className="text-xs text-muted-foreground">
-                --- from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-3">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">---</div>
-              <p className="text-xs text-muted-foreground">
-                --- since last hour
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <div
-          className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3"
+    <div className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold mb-4">Invoice Analysis Dashboard</h1>
+
+      <div className="mb-4">
+        <Label htmlFor="type" className="text-right">
+          Select Customer
+        </Label>
+
+        <Select
+          onValueChange={setSelectedCustomer}
+          value={selectedCustomer}
+          
         >
-          <Input type="file" onChange={(e) => handleImport(e)}/>
-          <div>
-            {JSON.stringify(importedData, null, 2)}
-          </div>
-          <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4" ref={printRef}>
-            <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Transactions</CardTitle>
-                <CardDescription>
-                  Recent transactions from your store.
-                </CardDescription>
-              </div>
-              <div className="ml-auto">
-                <Button
-                  variant="expandIcon"
-                  Icon={Printer}
-                  iconPlacement="right"
-                  className="ml-auto"
-                  onClick={() => handlePrint()}
+          <SelectTrigger className="w-[400px]">
+            <SelectValue placeholder="Customer" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectGroup>
+              <SelectLabel>Customer</SelectLabel>
+              {customers.map((customer) => (
+                <SelectItem
+                  key={customer}
+                  value={customer}
+                  className="capitalize"
                 >
-                  Print
-                </Button>
-                <Button
-                  variant="expandIcon"
-                  Icon={ArrowUpRight}
-                  iconPlacement="right"
-                  className="ml-3"
-                  onClick={() => showToast()}
-                >
-                  View All
-                </Button>
-              </div>
-              
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="uppercase">
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Address</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.map((item) => (
-                    <TableRow key={item.first_name}>
-                      <TableCell>
-                        <div className="font-medium">{item.first_name}</div>
-                      </TableCell>
-                      <TableCell>{item.email}</TableCell>
-                      <TableCell>{item.phone}</TableCell>
-                      <TableCell>{item.address}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-            {/* <PaginationControls
-              totalData={data.length}
-              hasNext={end < data.length}
-              customPerPage={5}
-              hasPrev={start > 0}
-            /> */}
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-5">
-            <CardHeader>
-              <CardTitle>Calendar</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-8">
-              <CalendarCard />
-            </CardContent>
-          </Card>
+                  {customer}
+                </SelectItem>
+              ))}
+
+              <SelectItem value="business" className="capitalize">
+                Business
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <MetricCard title="Total Revenue" value={`$${totalRevenue}`} />
+        <MetricCard
+          title="Average Order Value"
+          value={`$${averageOrderValue}`}
+        />
+        <MetricCard title="Paid Invoices" value={paidInvoices.toString()} />
+        <MetricCard title="Unpaid Invoices" value={unpaidInvoices.toString()} />
+      </div>
+
+      <div className="bg-platinum p-4 rounded shadow mb-4">
+        <h2 className="text-lg text-darknight font-semibold mb-2">
+          Monthly Invoice Breakdown
+        </h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="date" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Bar yAxisId="left" dataKey="Grand Total" fill="#8884d8" />
+              <Bar yAxisId="left" dataKey="Sub Total" fill="#82ca9d" />
+              <Bar yAxisId="left" dataKey="Tax Charges" fill="#ffc658" />
+              <Bar yAxisId="left" dataKey="Shipping Fees" fill="#ff7300" />
+              <Bar yAxisId="right" dataKey="Invoice Count" fill="#413ea0" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      </main>
+      </div>
+
+      <div className="bg-platinum text-darknight p-4 rounded shadow">
+        <h2 className="text-lg font-semibold mb-2">Invoice Details</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-platinum">
+            <thead>
+              <tr className="bg-onyx text-cloud uppercase text-sm leading-normal">
+                <th className="py-3 px-6 text-left">Customer</th>
+                <th className="py-3 px-6 text-left">Status</th>
+                <th className="py-3 px-6 text-left">Date</th>
+                <th className="py-3 px-6 text-left">Paid Date</th>
+                <th className="py-3 px-6 text-right">Shipping Fees</th>
+                <th className="py-3 px-6 text-right">Tax Charges</th>
+                <th className="py-3 px-6 text-right">Sub Total</th>
+                <th className="py-3 px-6 text-right">Grand Total</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600 text-sm font-light">
+              {filteredData.map((item, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-200 hover:bg-gray-100"
+                >
+                  <td className="py-3 px-6 text-left whitespace-nowrap">
+                    {item.Customer}
+                  </td>
+                  <td className="py-3 px-6 text-left">{item.Status}</td>
+                  <td className="py-3 px-6 text-left">{item.Date}</td>
+                  <td className="py-3 px-6 text-left">{item.Paid_date}</td>
+                  <td className="py-3 px-6 text-right">
+                    {formatCurrency(item.Shipping_fees)}
+                  </td>
+                  <td className="py-3 px-6 text-right">
+                    {formatCurrency(item.Tax_charges)}
+                  </td>
+                  <td className="py-3 px-6 text-right">
+                    {formatCurrency(item.Sub_total)}
+                  </td>
+                  <td className="py-3 px-6 text-right">
+                    {formatCurrency(item.Grand_total)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
+};
+
+interface MetricCardProps {
+  title: string;
+  value: string;
 }
+
+const MetricCard: React.FC<MetricCardProps> = ({ title, value }) => (
+  <div className="bg-platinum text-darknight p-4 rounded shadow">
+    <h2 className="text-lg font-semibold mb-2">{title}</h2>
+    <p className="text-2xl font-bold">{value}</p>
+  </div>
+);
+
+export default InvoiceAnalysisDashboard;

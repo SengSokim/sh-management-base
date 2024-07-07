@@ -13,7 +13,6 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import React, { useEffect, useState } from "react";
 import { PaginationControls } from "../_components/PaginationControls";
 import { AddCustomerV2 } from "./_components/AddCustomerV2";
@@ -25,7 +24,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import ImportCustomer from "./_components/ImportCustomer";
@@ -69,7 +67,6 @@ function Customers({
   const end = start + Number(per_page);
 
   const paginatedData = customers.slice(start, end);
-  
   return !customers.length && loading ? (
     <CustomerLoading />
   ) : (

@@ -3,46 +3,51 @@ import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import * as XLSX from "xlsx";
 import {
-  Table,
-  TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { File } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { File, MinusIcon } from "lucide-react";
+import { importTable } from "@/lib/helper";
+import { useCustomers } from "@/app/hooks/useCustomers";
+import { toast } from "sonner";
 function ImportCustomer() {
+  const { addMultiCustomers } = useCustomers()
   const [importedData, setImportedData] = useState<any>([]);
   const [open, setOpen] = useState(false);
   const handleImport = (e: any) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-      const workbook = XLSX.read(event.target?.result, { type: "binary" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const sheetData: any = XLSX.utils.sheet_to_json(sheet);
-
-      setImportedData(sheetData);
-    };
-
-    reader.readAsBinaryString(file);
+    importTable(e).then((response) => {
+      setImportedData(response)
+    })
   };
-  console.log(importedData)
+  const handleRemove = (index: any) => {
+    const newItems = importedData.filter((_:any, i:any) => i !== index);
+    setImportedData(newItems);
+  };
+
+  const ImportCustomers = () => {
+    addMultiCustomers(importedData).then(result => {
+     
+      if(result.success) {
+        toast.success('Customers imported successfully');
+        setImportedData([])
+      }else{
+        toast.error(result.message)
+      }
+
+      setOpen(false)
+    })
+  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger onClick={(e) => console.log(e)} asChild>
+      <DialogTrigger asChild>
         <Button
           variant="expandIcon"
           Icon={File}
@@ -61,7 +66,11 @@ function ImportCustomer() {
           <DialogTitle>Customer Details</DialogTitle>
         </DialogHeader>
         <div>
-          <Input type="file" onChange={(e) => handleImport(e)} />
+          <div className="flex justify-between gap-4">
+
+            <Input type="file" onChange={(e) => handleImport(e)} />
+            <Button variant="gooeyLeft" onClick={() => ImportCustomers()}>Import</Button>
+          </div>
             <div className="table-wrap block mt-3 max-h-96 overflow-auto no-scrollbar">
                 <table className="w-full">
                     <thead className="bg-white border-b sticky top-0">
@@ -72,18 +81,22 @@ function ImportCustomer() {
                             <TableHead>Email</TableHead>
                             <TableHead>Phone</TableHead>
                             <TableHead>Address</TableHead>
+                            <TableHead></TableHead>
                         </TableRow>
                     </thead>
                     <tbody className="h-96 ">
                     {importedData.length ? (
-                        importedData.map((item: any) => (
-                            <TableRow key={item.Name}>
-                              <TableCell>{item.Name}</TableCell>
-                              <TableCell>{item.Type}</TableCell>
-                              <TableCell>{item.Company_Name}</TableCell>
-                              <TableCell>{item.Email}</TableCell>
-                              <TableCell>{item.Phone}</TableCell>
-                              <TableCell>{item.Address}</TableCell>
+                        importedData.map((item: any,index:number) => (
+                            <TableRow key={item.name}>
+                              <TableCell>{item.name}</TableCell>
+                              <TableCell>{item.customer_type}</TableCell>
+                              <TableCell>{item.company_Name}</TableCell>
+                              <TableCell>{item.email}</TableCell>
+                              <TableCell>{item.phone}</TableCell>
+                              <TableCell>{item.address}</TableCell>
+                              <TableCell onClick={() => handleRemove(index)} >
+                                <MinusIcon className="hover:text-cloud hover:bg-slate-gray hover:rounded-full transition-all delay-200 ease-in-out"/>
+                              </TableCell>
                             </TableRow>
                         ))
                         ) : (
@@ -96,36 +109,7 @@ function ImportCustomer() {
                     </tbody>
                 </table>
             </div>
-          {/* <Card className="mt-3 max-h-[400px] overflow-auto no-scrollbar">
-            <Table className="w-full">
-              <TableHeader className="bg-onyx text-cloud sticky top-0">
-                <TableRow >
-                  <TableHead>Name</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Address</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {importedData.length ? (
-                  importedData.map((item: any) => (
-                    <TableRow key={item.name}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.phone}</TableCell>
-                      <TableCell>{item.email}</TableCell>
-                      <TableCell>{item.address}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center">
-                      No Record
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card> */}
+                          
         </div>
       </DialogContent>
     </Dialog>

@@ -52,6 +52,20 @@ export const useCustomers = () => {
         return success()
         
     }
+    const addMultiCustomers = async (customerData:any) => {
+       
+        const { data, error } = await supabase
+        .from('customers')
+        .insert(customerData)
+        .select()
+
+        if(error) {
+            return error
+        }
+
+        return success()
+        
+    }
             
     const updateCustomer = async(id:Number,name:String, type:any, company_name:any, phone:String,address:String, email:String, tin_number:String) => {
     
@@ -95,6 +109,7 @@ export const useCustomers = () => {
         setCustomers,
         getCustomers,
         addCustomer,
+        addMultiCustomers,
         updateCustomer,
         deleteCustomer
     }

@@ -39,6 +39,7 @@ import { useState } from "react";
 import { useSuppliers } from "@/app/hooks/useSuppliers";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function SupplierTable({
   suppliers,
@@ -131,7 +132,19 @@ export function SupplierTable({
                           <TableCell className="font-medium">
                             {index + (Number(page) - 1) * Number(per_page) + 1}
                           </TableCell>
-                          <TableCell>{supplier.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar>
+                                <AvatarImage
+                                  src="/user-icon.svg"
+                                  alt="@shadcn"
+                                  className=" bg-gradient-to-b from-onyx to-french-gray"
+                                />
+                                <AvatarFallback>User</AvatarFallback>
+                              </Avatar>
+                              {supplier.name}
+                            </div>
+                          </TableCell>
                           <TableCell>{supplier.email}</TableCell>
                           <TableCell>{supplier.phone}</TableCell>
                           <TableCell className="text-right">
@@ -271,7 +284,9 @@ export function SupplierTable({
                       ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-lg">No Record</TableCell>
+                      <TableCell colSpan={5} className="text-center text-lg">
+                        No Record
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>

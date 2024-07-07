@@ -177,10 +177,11 @@ export function AddInvoiceV2() {
           `<b>Invoice Number</b>: #SH-${leadingZeros(
             details.invoice_number
           )}\n` +
+          `<b>Status</b>: ${details.status}\n` +
+          `<b>Due Date</b>: ${details.due_date}\n` +
           `=============================\n` +
           `${productsText}` +
           `=============================\n` +
-          `<b>Status</b>: ${details.status}\n` +
           `<b>Shipping Fees</b>: ${formatCurrency(details.shipping_fees)}\n` +
           `<b>Tax Charges</b>: ${formatCurrency(details.tax_charges)}\n` +
           `<b>Sub Total</b>: ${formatCurrency(details.sub_total)}\n` +
