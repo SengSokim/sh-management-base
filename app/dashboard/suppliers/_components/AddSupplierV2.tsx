@@ -75,7 +75,7 @@ export function AddSupplierV2() {
           New Supplier
         </Button>
       </SheetTrigger>
-      <SheetContent className="min-w-[400px]">
+      <SheetContent className="min-w-[500px]">
         <SheetHeader>
           <SheetTitle>Enter supplier details</SheetTitle>
           <SheetDescription>

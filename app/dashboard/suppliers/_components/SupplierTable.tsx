@@ -284,7 +284,7 @@ export function SupplierTable({
                       ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-lg">
+                      <TableCell colSpan={5} className="text-center text-lg font-bold">
                         No Record
                       </TableCell>
                     </TableRow>

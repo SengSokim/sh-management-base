@@ -76,8 +76,9 @@ const exportConfigs: Record<string, ExportConfig> = {
     })
   },
   inventory: {
-    headers: ["Supplier", "Item", "Type", "Weight", "Color", "Size", "Quantity", "Date_Received", "Reorder_Level"],
+    headers: ["SKU", "Supplier", "Item", "Type", "Weight", "Color", "Size", "Quantity", "Date_Received", "Reorder_Level"],
     mapFunction: (item: any) => ({
+      SKU: item.sku,
       Supplier: item.suppliers.name,
       Item: item.item_name,
       Type: item.paper_type,
@@ -101,7 +102,6 @@ export function exportTable(data?: ExportData, title?: string, worksheetName?: s
     toast.error('Export title is required');
     return;
   }
-
   const lowercaseTitle = title.toLowerCase();
   const config = exportConfigs[lowercaseTitle];
 
@@ -109,7 +109,6 @@ export function exportTable(data?: ExportData, title?: string, worksheetName?: s
     toast.error(`Unsupported export type: ${title}`);
     return;
   }
-
   try {
     const dataToExport = data.map(config.mapFunction);
 

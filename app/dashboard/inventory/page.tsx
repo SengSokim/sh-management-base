@@ -28,6 +28,7 @@ import { useInventory } from "@/app/hooks/useInventory";
 import InventoryLoading from "./_components/InventoryLoading";
 import { AddInventoryV2 } from "./_components/AddInventoryV2";
 import { InventoryTable } from "./_components/InventoryTable";
+import Link from "next/link";
 
 function Inventory({
   searchParams,

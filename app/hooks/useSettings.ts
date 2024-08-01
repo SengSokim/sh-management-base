@@ -19,7 +19,7 @@ export const useSettings = () => {
             setSettings(settings[0])
         }
     }
-    const updateSettings = async (tin_number:string) => {
+    const updateSettings = async (tin_number:string, exchange_rate: number) => {
         const {
             data: { user },
           } = await supabase.auth.getUser()
@@ -27,7 +27,8 @@ export const useSettings = () => {
         .from('settings')
         .update([
         {   
-            tin_number:tin_number
+            tin_number:tin_number,
+            exchange_rate:exchange_rate
         },
         ])
         .eq('admin_id',user?.id)

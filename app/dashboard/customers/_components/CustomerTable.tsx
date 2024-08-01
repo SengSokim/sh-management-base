@@ -363,7 +363,7 @@ export function CustomerTable({
                 ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-lg">
+                <TableCell colSpan={7} className="text-center text-lg font-bold">
                   No Record
                 </TableCell>
               </TableRow>

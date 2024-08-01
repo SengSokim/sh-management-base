@@ -51,6 +51,9 @@ const formSchema = z.object({
   item_name: z.string().min(4, {
     message: "Must be minimum 4 characters long",
   }),
+  sku: z.string().min(4, {
+    message: "Must be minimum 4 characters long",
+  }),
   type: z.string().optional(),
   weight: z.string().optional(),
   color: z.string().optional(),
@@ -74,6 +77,7 @@ export function AddInventoryV2() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       item_name: "",
+      sku: "",
       type: "",
       quantity: 0,
       date_received: new Date(),
@@ -84,6 +88,7 @@ export function AddInventoryV2() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     const supplier_id = parseInt(values.supplier_id);
     const item_name = values.item_name;
+    const sku = values.sku;
     const type = values.type;
     const weight = values.weight;
     const color = values.color;
@@ -94,6 +99,7 @@ export function AddInventoryV2() {
     addItems(
       supplier_id,
       item_name,
+      sku,
       type,
       weight,
       color,
@@ -114,18 +120,32 @@ export function AddInventoryV2() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="expandIcon" Icon={PlusCircle} iconPlacement="left">
-          New Supplier
+          New Item
         </Button>
       </SheetTrigger>
-      <SheetContent className="min-w-[400px] overflow-auto">
+      <SheetContent className="min-w-[500px] overflow-auto">
         <SheetHeader>
-          <SheetTitle>Enter supplier details</SheetTitle>
+          <SheetTitle>Enter Item details</SheetTitle>
           <SheetDescription>
-            Enter supplier information. Click save when you're done.
+            Enter item information. Click save when you're done.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="sku"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SKU</FormLabel>
+                  <FormControl>
+                    <Input placeholder="SKU" {...field} />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="supplier_id"
@@ -139,11 +159,11 @@ export function AddInventoryV2() {
                     defaultValue={field.value}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a Client" />
+                      <SelectValue placeholder="Select a supplier" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Clients</SelectLabel>
+                        <SelectLabel>Suppliers</SelectLabel>
                         {suppliers?.map((item: any, index: number) => (
                           <SelectItem value={item.id.toString()} key={index}>
                             {item.name}

@@ -27,7 +27,7 @@ export default function RootLayout({
       </div>
       <div className="mx-auto grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
         <nav
-          className="grid text-sm text-muted-foreground bg-platinum text-darknight p-3 h-full rounded-md"
+          className="grid text-sm text-muted-foreground bg-platinum text-darknight p-3 rounded-md h-[460px] sticky top-0"
           x-chunk="dashboard-04-chunk-0"
         >
           <ul className="space-y-2">

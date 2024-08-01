@@ -84,7 +84,7 @@ export function AddCustomerV2() {
           New Customer
         </Button>
       </SheetTrigger>
-      <SheetContent className="min-w-[400px] overflow-auto">
+      <SheetContent className="min-w-[500px] overflow-auto">
         <SheetHeader>
           <SheetTitle>Enter Customer details</SheetTitle>
           <SheetDescription>
