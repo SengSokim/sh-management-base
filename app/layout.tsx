@@ -2,7 +2,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { headers } from "next/headers";
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { capitalize } from "@/lib/helper";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -18,7 +18,14 @@ export async function generateMetadata(): Promise<Metadata> {
     title: pathname ? capitalize(pathname) : 'Dashboard',
     description: "management dashboard",
     metadataBase: new URL(defaultUrl),
+    manifest: '/manifest.json',
   };
+}
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#ffffff',
 }
 export default function RootLayout({
   children,

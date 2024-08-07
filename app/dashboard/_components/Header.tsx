@@ -184,9 +184,13 @@ function Header() {
             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            
+            <Link href={'/dashboard/settings/profile'}>
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+            </Link>
+            <Link href={'/dashboard/settings/general'}>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+            </Link>
 
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
